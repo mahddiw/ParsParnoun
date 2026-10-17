@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مهندسان مشاور پارس پرنون | سامانه جامع مدیریت زمان پروژه‌ها و کارکرد</title>
+    <title>مهندسان مشاور پارس پرنون | سامانه مدیریت زمان پروژه‌ها و کارکرد</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -47,7 +47,7 @@
     </script>
 
     <style>
-        /* پوسته پیش‌فرض: سنگ گرم معماری و سرمه‌ای ذغالی (بدون هیچ‌گونه سفیدی تند) */
+        /* پوسته پیش‌فرض: سنگ گرم معماری و سرمه‌ای ذغالی (ضد خستگی چشم) */
         :root {
             --bg-canvas: #DAD5CB;
             --bg-card: #E6E2D8;
@@ -61,7 +61,6 @@
             --accent-main: #2A4359;
         }
 
-        /* پوسته ۲: خاکستری-سرمه‌ای ملایم (Slate Mid-Tone) */
         [data-theme="slate"] {
             --bg-canvas: #CED6DE;
             --bg-card: #DCE3EA;
@@ -75,7 +74,6 @@
             --accent-main: #294A6B;
         }
 
-        /* پوسته ۳: خاکی و برنزی گرم (Warm Taupe) */
         [data-theme="taupe"] {
             --bg-canvas: #D6CEC2;
             --bg-card: #E3DDD3;
@@ -89,7 +87,6 @@
             --accent-main: #5C4738;
         }
 
-        /* پوسته ۴: تیره مهندسی (Dark Mode) */
         [data-theme="dark"] {
             --bg-canvas: #141920;
             --bg-card: #1D242E;
@@ -115,6 +112,11 @@
             padding: 0;
             -webkit-font-smoothing: antialiased;
             transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* کلاس قطعی مخفی‌سازی برای جلوگیری از باقی ماندن صفحه ورود */
+        .force-hidden {
+            display: none !important;
         }
 
         ::-webkit-scrollbar {
@@ -147,8 +149,8 @@
             border: 1px solid var(--border-main);
             color: var(--text-main);
             border-radius: 7px;
-            padding: 0.55rem 0.8rem;
-            font-size: 0.8125rem;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
             outline: none;
             transition: all 0.15s ease;
         }
@@ -162,7 +164,7 @@
             color: var(--sidebar-text);
             border-radius: 7px;
             font-weight: 600;
-            transition: opacity 0.15s ease, transform 0.1s ease;
+            transition: opacity 0.15s ease;
         }
         .btn-solid:hover {
             opacity: 0.92;
@@ -218,6 +220,23 @@
             font-weight: 700;
         }
 
+        .period-chip {
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid var(--border-main);
+            background-color: var(--bg-inset);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .period-chip.active {
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            border-color: var(--sidebar-bg);
+        }
+
         .ltr-num {
             direction: ltr;
             display: inline-block;
@@ -230,6 +249,12 @@
                 linear-gradient(to right, rgba(28, 33, 39, 0.045) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(28, 33, 39, 0.045) 1px, transparent 1px);
         }
+
+        @media print {
+            aside, header, #filterPanelCard {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -238,7 +263,7 @@
     <div id="toastBox" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
 
     <!-- مودال ویرایش کامل کارمند و سمت سازمانی -->
-    <div id="editEmployeeModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div id="editEmployeeModal" class="force-hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="panel-card w-full max-w-lg p-6 space-y-4">
             <div class="flex items-center justify-between border-b border-canvas-border pb-3">
                 <h3 class="text-sm font-bold text-ink">ویرایش مشخصات، سمت سازمانی و رمز کارمند</h3>
@@ -291,10 +316,9 @@
         </div>
     </div>
 
-    <!-- لیست پیشنهادی سمت‌های سازمانی -->
     <datalist id="rolesDataList"></datalist>
 
-    <!-- ==================== ۱. صفحه ورود (بدون سفیدی تند، با نماد رسمی شرکت) ==================== -->
+    <!-- ==================== ۱. صفحه ورود (به محض ورود کاملاً مخفی می‌شود) ==================== -->
     <main id="loginScreen" class="min-h-screen w-full flex flex-col justify-between blueprint-bg p-4 sm:p-8">
         
         <!-- نوار بالای صفحه ورود -->
@@ -305,18 +329,18 @@
             </div>
             <div class="flex items-center gap-1.5 panel-card px-3 py-1.5">
                 <span class="text-[11px] text-ink-muted ml-1">پوسته رنگی:</span>
-                <button onclick="setTheme('default')" class="px-2 py-0.5 text-[11px] rounded bg-[#DAD5CB] text-[#1C2127] border border-stone-400 font-medium">سنگ گرم (پیش‌فرض)</button>
+                <button onclick="setTheme('default')" class="px-2 py-0.5 text-[11px] rounded bg-[#DAD5CB] text-[#1C2127] border border-stone-400 font-medium">سنگ گرم</button>
                 <button onclick="setTheme('slate')" class="px-2 py-0.5 text-[11px] rounded bg-[#CED6DE] text-[#182026] border border-slate-400 font-medium">خاکستری-سرمه‌ای</button>
                 <button onclick="setTheme('taupe')" class="px-2 py-0.5 text-[11px] rounded bg-[#D6CEC2] text-[#231F1D] border border-stone-500 font-medium">خاکی مات</button>
                 <button onclick="setTheme('dark')" class="px-2 py-0.5 text-[11px] rounded bg-[#1B222C] text-[#E6E2D8] border border-slate-700 font-medium">تیره</button>
             </div>
         </div>
 
-        <!-- کارت ورود دو ستونه باکلاس -->
-        <div class="my-auto w-full max-w-3xl mx-auto">
+        <!-- کارت ورود دو ستونه -->
+        <div class="my-auto w-full max-w-3xl mx-auto py-6">
             <div class="panel-card overflow-hidden grid grid-cols-1 md:grid-cols-12 shadow-xl">
                 
-                <!-- ستون راست: هویت بصری و نماد شرکت (سرمه‌ای ذغالی) -->
+                <!-- ستون راست: هویت بصری و نماد شرکت -->
                 <div class="md:col-span-5 sidebar-shell p-8 flex flex-col justify-between items-center text-center border-b md:border-b-0 md:border-l border-canvas-border">
                     <div class="w-full flex flex-col items-center">
                         <div class="w-32 h-32 rounded-xl bg-[#EAE6DF] p-2.5 border-2 border-[#B68D40] shadow-md flex items-center justify-center mb-5">
@@ -332,7 +356,7 @@
                     </div>
 
                     <div class="w-full pt-6 mt-6 border-t border-white/10">
-                        <div class="text-[11px] text-[#EAE6DF]/60 mb-2">بخش‌های تخصصی فعال:</div>
+                        <div class="text-[11px] text-[#EAE6DF]/60 mb-2">واحدهای تخصصی فعال:</div>
                         <div id="loginDeptsBadges" class="flex flex-wrap justify-center gap-1.5"></div>
                     </div>
                 </div>
@@ -364,8 +388,8 @@
                                 placeholder="••••••••">
                         </div>
 
-                        <div id="loginError" class="hidden p-3 rounded-lg bg-red-900/15 border border-red-800/30 text-red-900 text-xs font-medium">
-                            نام کاربری یا رمز عبور اشتباه است و یا حساب کاربری غیرفعال شده است.
+                        <div id="loginError" class="force-hidden p-3 rounded-lg bg-red-900/15 border border-red-800/30 text-red-900 text-xs font-medium">
+                            نام کاربری یا رمز عبور اشتباه است.
                         </div>
 
                         <button type="submit" class="btn-solid w-full py-2.5 text-sm mt-2 flex items-center justify-center gap-2">
@@ -388,12 +412,11 @@
     </main>
 
     <!-- ==================== ۲. محیط اصلی سامانه (پس از ورود) ==================== -->
-    <div id="appShell" class="hidden min-h-screen flex flex-col lg:flex-row">
+    <div id="appShell" class="force-hidden min-h-screen flex flex-col lg:flex-row">
 
         <!-- نوار کناری سرمه‌ای ذغالی (Sidebar) -->
         <aside class="w-full lg:w-64 sidebar-shell flex flex-col justify-between shrink-0 border-b lg:border-b-0 lg:border-l border-black/20">
             <div>
-                <!-- هدر سایدبار با نماد شرکت -->
                 <div class="p-5 border-b border-white/10 flex items-center gap-3.5">
                     <div class="w-12 h-12 rounded-lg bg-[#EAE6DF] p-1.5 border border-[#B68D40] shrink-0 flex items-center justify-center">
                         <img class="company-logo-img w-full h-full object-contain" alt="پارس پرنون" src="">
@@ -405,7 +428,7 @@
                 </div>
 
                 <!-- منوی مدیر ارشد -->
-                <nav id="adminNav" class="hidden p-3 space-y-1">
+                <nav id="adminNav" class="force-hidden p-3 space-y-1">
                     <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">مدیریت و تحلیل</div>
                     <div onclick="switchAdminTab('dashboard')" id="nav-dashboard" class="side-link active">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
@@ -430,7 +453,7 @@
                 </nav>
 
                 <!-- کارت اطلاعات کارمند در سایدبار -->
-                <div id="empSidebarBox" class="hidden p-4 space-y-3">
+                <div id="empSidebarBox" class="force-hidden p-4 space-y-3">
                     <div class="p-3.5 rounded-lg bg-white/5 border border-white/10 space-y-2">
                         <div>
                             <div class="text-[10px] text-white/50">واحد سازمانی:</div>
@@ -448,7 +471,7 @@
                 </div>
             </div>
 
-            <!-- پروفایل کاربر و خروج در پایین سایدبار -->
+            <!-- پروفایل کاربر و خروج -->
             <div class="p-4 border-t border-white/10 bg-black/20">
                 <div class="flex items-center justify-between mb-3">
                     <div class="min-w-0">
@@ -484,21 +507,21 @@
                         <button onclick="setTheme('dark')" class="px-2 py-0.5 text-[11px] rounded bg-[#1B222C] text-[#E6E2D8]">تیره</button>
                     </div>
 
-                    <!-- دکمه‌های عملیاتی مدیر -->
-                    <div id="adminQuickActions" class="hidden flex items-center gap-2">
-                        <button onclick="downloadUpdatedSiteFile()" class="btn-accent px-3.5 py-1.5 text-xs flex items-center gap-1.5 shadow-xs" title="دریافت فایل index.html با تمام تغییرات برای جایگزینی در گیت‌هاب">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            <span>دانلود فایل آپدیت‌شده گیت‌هاب</span>
+                    <!-- دکمه‌های گزارش‌گیری مدیر (بدون هیچ‌گونه دکمه دانلود کد HTML) -->
+                    <div id="adminQuickActions" class="force-hidden flex items-center gap-2">
+                        <button onclick="exportCSV()" class="btn-accent px-3.5 py-1.5 text-xs flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <span>خروجی اکسل گزارش (CSV)</span>
                         </button>
-                        <button onclick="exportCSV()" class="btn-outline px-3 py-1.5 text-xs">
-                            خروجی اکسل (CSV)
+                        <button onclick="window.print()" class="btn-outline px-3 py-1.5 text-xs">
+                            چاپ / PDF
                         </button>
                     </div>
                 </div>
             </header>
 
-            <!-- بنر اطلاعیه مدیریت (در صورت فعال بودن) -->
-            <div id="announcementBanner" class="hidden mx-6 mt-4 p-3 rounded-lg bg-[#B68D40]/20 border border-[#B68D40] text-xs text-ink flex items-center justify-between gap-2">
+            <!-- بنر اطلاعیه مدیریت -->
+            <div id="announcementBanner" class="force-hidden mx-6 mt-4 p-3 rounded-lg bg-[#B68D40]/20 border border-[#B68D40] text-xs text-ink flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                     <span class="px-2 py-0.5 rounded bg-[#B68D40] text-[#141414] font-bold text-[10px]">اطلاعیه مدیریت</span>
                     <span id="announcementText" class="font-medium"></span>
@@ -506,41 +529,103 @@
             </div>
 
             <!-- فضای کاری -->
-            <div class="p-6 max-w-[1400px] w-full mx-auto space-y-6 flex-1">
+            <div class="p-6 max-w-[1440px] w-full mx-auto space-y-6 flex-1">
 
                 <!-- ==================== الف) پنل مدیریت ارشد ==================== -->
-                <div id="adminWorkspace" class="hidden space-y-6">
+                <div id="adminWorkspace" class="force-hidden space-y-6">
 
                     <!-- تب ۱: داشبورد و تحلیل زمان مصرفی پروژه‌ها -->
                     <section id="tab-dashboard" class="space-y-6">
 
-                        <!-- فیلترهای هوشمند داشبورد -->
-                        <div class="panel-card p-4 flex flex-wrap items-end gap-3">
-                            <div class="flex-1 min-w-[160px]">
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">فیلتر واحد سازمانی (بخش)</label>
-                                <select id="fltDept" onchange="refreshDashboard()" class="form-control w-full py-1.5 text-xs"></select>
+                        <!-- پنل جامع فیلترهای پیشرفته و فیلتر دوره زمانی -->
+                        <div id="filterPanelCard" class="panel-card p-5 space-y-4">
+                            
+                            <!-- ردیف بالای فیلتر: انتخاب سریع دوره زمانی + بازه تاریخ از / تا -->
+                            <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-canvas-border">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="text-xs font-bold text-ink ml-2 flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-[#B68D40]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        <span>فیلتر دوره زمانی:</span>
+                                    </span>
+                                    <button type="button" onclick="setQuickPeriod('ALL')" id="prd-ALL" class="period-chip active">همه زمان‌ها</button>
+                                    <button type="button" onclick="setQuickPeriod('TODAY')" id="prd-TODAY" class="period-chip">امروز</button>
+                                    <button type="button" onclick="setQuickPeriod('WEEK')" id="prd-WEEK" class="period-chip">۷ روز اخیر</button>
+                                    <button type="button" onclick="setQuickPeriod('MONTH')" id="prd-MONTH" class="period-chip">ماه جاری</button>
+                                    <button type="button" onclick="setQuickPeriod('SEASON')" id="prd-SEASON" class="period-chip">فصل جاری (۳ ماه)</button>
+                                    <button type="button" onclick="setQuickPeriod('YEAR')" id="prd-YEAR" class="period-chip">سال جاری</button>
+                                </div>
+
+                                <!-- بازه تاریخ دقیق از / تا (روز / ماه / سال) -->
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <div class="flex items-center gap-1.5">
+                                        <label class="text-[11px] font-semibold text-ink-muted">از تاریخ:</label>
+                                        <input type="text" id="fltDateFrom" oninput="onCustomDateInput()" dir="ltr" placeholder="01 / 07 / 1405" class="form-control w-32 text-center font-mono py-1 text-xs">
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <label class="text-[11px] font-semibold text-ink-muted">تا تاریخ:</label>
+                                        <input type="text" id="fltDateTo" oninput="onCustomDateInput()" dir="ltr" placeholder="30 / 07 / 1405" class="form-control w-32 text-center font-mono py-1 text-xs">
+                                    </div>
+                                </div>
                             </div>
-                            <div class="flex-1 min-w-[200px]">
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">فیلتر پروژه</label>
-                                <select id="fltProject" onchange="refreshDashboard()" class="form-control w-full py-1.5 text-xs"></select>
+
+                            <!-- ردیف دوم فیلترها: ۸ فیلتر تخصصی همزمان -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 items-end">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۱. واحد سازمانی (بخش)</label>
+                                    <select id="fltDept" onchange="refreshDashboard()" class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۲. پروژه</label>
+                                    <select id="fltProject" onchange="refreshDashboard()" class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۳. وضعیت پروژه</label>
+                                    <select id="fltProjStatus" onchange="refreshDashboard()" class="form-control w-full">
+                                        <option value="ALL">همه وضعیت‌ها</option>
+                                        <option value="active">فقط پروژه‌های در جریان</option>
+                                        <option value="completed">فقط پروژه‌های تکمیل‌شده</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۴. کارشناس / پرسنل</label>
+                                    <select id="fltUser" onchange="refreshDashboard()" class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۵. سمت سازمانی</label>
+                                    <select id="fltRole" onchange="refreshDashboard()" class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۶. نوع فعالیت تخصصی</label>
+                                    <select id="fltCategory" onchange="refreshDashboard()" class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۷. حداقل ساعت رکورد</label>
+                                    <select id="fltMinHours" onchange="refreshDashboard()" class="form-control w-full">
+                                        <option value="0">همه ساعات</option>
+                                        <option value="2">حداقل ۲ ساعت و بالاتر</option>
+                                        <option value="4">حداقل ۴ ساعت و بالاتر</option>
+                                        <option value="6">حداقل ۶ ساعت و بالاتر</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۸. جستجو در توضیحات</label>
+                                    <input type="text" id="fltSearchText" oninput="refreshDashboard()" placeholder="مثال: ۵۰۹۰، پلان..." class="form-control w-full">
+                                </div>
                             </div>
-                            <div class="flex-1 min-w-[160px]">
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">فیلتر کارشناس</label>
-                                <select id="fltUser" onchange="refreshDashboard()" class="form-control w-full py-1.5 text-xs"></select>
+
+                            <!-- نوار خلاصه وضعیت فیلترهای اعمال شده -->
+                            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 text-[11px] text-ink-muted">
+                                <div id="activeFilterSummaryText" class="font-medium">در حال نمایش تمامی رکوردها</div>
+                                <button type="button" onclick="resetFilters()" class="btn-outline px-3 py-1 text-xs font-semibold">
+                                    پاک کردن تمام فیلترها (نمایش همه)
+                                </button>
                             </div>
-                            <div class="flex-1 min-w-[160px]">
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">فیلتر فعالیت تخصصی</label>
-                                <select id="fltCategory" onchange="refreshDashboard()" class="form-control w-full py-1.5 text-xs"></select>
-                            </div>
-                            <button onclick="resetFilters()" class="btn-outline px-4 py-2 text-xs">
-                                نمایش کل اطلاعات
-                            </button>
                         </div>
 
-                        <!-- کارت‌های شاخص کلیدی (KPI) با تمرکز روی زمان پروژه‌ها -->
+                        <!-- کارت‌های شاخص کلیدی (KPI) -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div class="panel-card p-5 border-r-4 border-r-[#2A4359]">
-                                <div class="text-xs font-medium text-ink-muted">کل زمان صرف‌شده در پروژه‌ها</div>
+                                <div class="text-xs font-medium text-ink-muted">مجموع زمان صرف‌شده (در بازه انتخابی)</div>
                                 <div class="mt-2 flex items-baseline gap-1.5">
                                     <span id="kpiTotalHours" class="text-2xl font-bold text-ink">0</span>
                                     <span class="text-xs text-ink-muted">ساعت</span>
@@ -549,9 +634,9 @@
                             </div>
 
                             <div class="panel-card p-5 border-r-4 border-r-[#B68D40]">
-                                <div class="text-xs font-medium text-ink-muted">پرمصرف‌ترین پروژه (بیشترین زمان)</div>
+                                <div class="text-xs font-medium text-ink-muted">پرمصرف‌ترین پروژه در این بازه</div>
                                 <div id="kpiTopProjectName" class="mt-2 text-sm font-bold text-ink truncate">-</div>
-                                <div id="kpiTopProjectStats" class="mt-2 text-[11px] font-semibold text-[#8C6520]">0 ساعت (0% از کل زمان شرکت)</div>
+                                <div id="kpiTopProjectStats" class="mt-2 text-[11px] font-semibold text-[#8C6520]">0 ساعت (0% از زمان)</div>
                             </div>
 
                             <div class="panel-card p-5 border-r-4 border-r-[#2E6F65]">
@@ -564,27 +649,27 @@
                             </div>
 
                             <div class="panel-card p-5 border-r-4 border-r-[#A84A3B]">
-                                <div class="text-xs font-medium text-ink-muted">پرسنل فعال و رکوردهای ثبت‌شده</div>
+                                <div class="text-xs font-medium text-ink-muted">پرسنل مشارکت‌کننده و تعداد ثبت</div>
                                 <div class="mt-2 flex items-baseline gap-2">
                                     <span id="kpiStaffCount" class="text-2xl font-bold text-ink">0</span>
                                     <span class="text-xs text-ink-muted">نفر</span>
                                     <span class="text-ink-faint">|</span>
                                     <span id="kpiLogsCount" class="text-lg font-bold text-ink">0</span>
-                                    <span class="text-xs text-ink-muted">ثبت</span>
+                                    <span class="text-xs text-ink-muted">رکورد</span>
                                 </div>
-                                <div class="mt-2 text-[11px] text-ink-faint">بر مبنای واحدهای نیم‌ساعته</div>
+                                <div class="mt-2 text-[11px] text-ink-faint">بر اساس فیلترهای انتخابی</div>
                             </div>
                         </div>
 
-                        <!-- جدول تخصصی کالبدشکافی زمان هر پروژه (چقدر از زمان شرکت را گرفته است) -->
+                        <!-- جدول تخصصی کالبدشکافی زمان هر پروژه -->
                         <div class="panel-card p-5 space-y-4">
                             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-canvas-border pb-3">
                                 <div>
                                     <h3 class="text-sm font-bold text-ink">کالبدشکافی دقیق زمان مصرفی هر پروژه (سهم هر پروژه از کل زمان شرکت)</h3>
-                                    <p class="text-[11px] text-ink-muted mt-0.5">مقایسه زمان واقعی صرف‌شده در هر پروژه نسبت به کل زمان شرکت و سقف بودجه زمانی تعیین‌شده برای آن پروژه</p>
+                                    <p class="text-[11px] text-ink-muted mt-0.5">نشان می‌دهد هر پروژه در دوره زمانی و فیلتر انتخابی چه مقدار از وقت شرکت و بودجه زمانی خود را مصرف کرده است</p>
                                 </div>
                                 <button onclick="switchAdminTab('projects')" class="btn-outline px-3 py-1.5 text-xs">
-                                    تنظیم بودجه زمانی پروژه‌ها
+                                    مدیریت بودجه زمانی پروژه‌ها
                                 </button>
                             </div>
 
@@ -596,9 +681,9 @@
                                             <th class="py-2.5 px-3">واحد متولی</th>
                                             <th class="py-2.5 px-3 text-center">وضعیت</th>
                                             <th class="py-2.5 px-3 text-center">زمان صرف‌شده</th>
-                                            <th class="py-2.5 px-3 text-center">بودجه زمانی پروژه</th>
-                                            <th class="py-2.5 px-3 w-48">سهم از کل زمان شرکت (%)</th>
-                                            <th class="py-2.5 px-3 w-48">میزان مصرف بودجه پروژه</th>
+                                            <th class="py-2.5 px-3 text-center">بودجه زمانی کل</th>
+                                            <th class="py-2.5 px-3 w-48">سهم از زمان دوره انتخابی (%)</th>
+                                            <th class="py-2.5 px-3 w-48">درصد مصرف بودجه پروژه</th>
                                             <th class="py-2.5 px-3">نفرات درگیر در پروژه</th>
                                         </tr>
                                     </thead>
@@ -607,12 +692,12 @@
                             </div>
                         </div>
 
-                        <!-- ردیف اول نمودارها (تمرکز روی زمان پروژه‌ها و بودجه زمانی) -->
+                        <!-- ردیف اول نمودارها -->
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
                             <div class="lg:col-span-5 panel-card p-5">
                                 <div class="flex items-center justify-between mb-3">
                                     <h3 class="text-xs font-bold text-ink">۱. سهم هر پروژه از کل زمان شرکت (ساعت و درصد)</h3>
-                                    <span class="text-[10px] text-ink-faint">نمودار سهم زمانی</span>
+                                    <span class="text-[10px] text-ink-faint">توزیع زمان پروژه‌ها</span>
                                 </div>
                                 <div class="h-64 relative">
                                     <canvas id="chartProjShare"></canvas>
@@ -621,8 +706,8 @@
 
                             <div class="lg:col-span-7 panel-card p-5">
                                 <div class="flex items-center justify-between mb-3">
-                                    <h3 class="text-xs font-bold text-ink">۲. مقایسه «زمان صرف‌شده واقعی» با «بودجه زمانی برآوردی» هر پروژه</h3>
-                                    <span class="text-[10px] text-ink-faint">کنترل انحراف زمانی پروژه</span>
+                                    <h3 class="text-xs font-bold text-ink">۲. مقایسه «زمان صرف‌شده واقعی» با «سقف بودجه زمانی» هر پروژه</h3>
+                                    <span class="text-[10px] text-ink-faint">کنترل بودجه زمانی</span>
                                 </div>
                                 <div class="h-64 relative">
                                     <canvas id="chartProjBudget"></canvas>
@@ -630,12 +715,12 @@
                             </div>
                         </div>
 
-                        <!-- ردیف دوم نمودارها (بخش‌ها، پرسنل، خدمات فنی و روند روزانه) -->
+                        <!-- ردیف دوم نمودارها -->
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
                             <div class="panel-card p-5">
                                 <div class="flex items-center justify-between mb-3">
-                                    <h3 class="text-xs font-bold text-ink">۳. مقایسه کارکرد پرسنل (به همراه سمت سازمانی)</h3>
-                                    <span class="text-[10px] text-ink-faint">ساعت کارکرد نفرات</span>
+                                    <h3 class="text-xs font-bold text-ink">۳. مقایسه ساعات کارکرد پرسنل در دوره انتخابی</h3>
+                                    <span class="text-[10px] text-ink-faint">عملکرد نفرات</span>
                                 </div>
                                 <div class="h-64 relative">
                                     <canvas id="chartStaffHours"></canvas>
@@ -658,7 +743,7 @@
                             <div class="lg:col-span-5 panel-card p-5">
                                 <div class="flex items-center justify-between mb-3">
                                     <h3 class="text-xs font-bold text-ink">۵. تفکیک زمان مصرفی واحدهای سازمانی (بخش‌ها)</h3>
-                                    <span class="text-[10px] text-ink-faint">عملکرد بخش‌ها</span>
+                                    <span class="text-[10px] text-ink-faint">سهم بخش‌ها</span>
                                 </div>
                                 <div class="h-60 relative">
                                     <canvas id="chartDeptShare"></canvas>
@@ -667,8 +752,8 @@
 
                             <div class="lg:col-span-7 panel-card p-5">
                                 <div class="flex items-center justify-between mb-3">
-                                    <h3 class="text-xs font-bold text-ink">۶. روند زمانی ثبت ساعات کارکرد در روزهای مختلف (روز / ماه / سال)</h3>
-                                    <span class="text-[10px] text-ink-faint">پایش روزانه</span>
+                                    <h3 class="text-xs font-bold text-ink">۶. روند روزانه ثبت کارکرد در دوره زمانی (روز / ماه / سال)</h3>
+                                    <span class="text-[10px] text-ink-faint">پایش خط زمانی</span>
                                 </div>
                                 <div class="h-60 relative">
                                     <canvas id="chartTimeline"></canvas>
@@ -678,10 +763,9 @@
                     </section>
 
                     <!-- تب ۲: مدیریت پروژه‌ها، بودجه زمانی، بخش‌ها و خدمات -->
-                    <section id="tab-projects" class="hidden space-y-6">
+                    <section id="tab-projects" class="force-hidden space-y-6">
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                            <!-- تعریف پروژه جدید با سقف بودجه زمانی -->
                             <div class="lg:col-span-8 panel-card p-5 space-y-4">
                                 <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">تعریف پروژه جدید و تعیین سقف بودجه زمانی (ساعت برآوردی)</h3>
                                 <form onsubmit="addProject(event)" class="grid grid-cols-1 sm:grid-cols-5 gap-3 panel-inset p-3.5">
@@ -724,7 +808,6 @@
                                 </div>
                             </div>
 
-                            <!-- مدیریت بخش‌های شرکت -->
                             <div class="lg:col-span-4 panel-card p-5 space-y-4">
                                 <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">بخش‌های شرکت (افزودن بخش جدید)</h3>
                                 <form onsubmit="addDepartment(event)" class="space-y-3 panel-inset p-3.5">
@@ -742,7 +825,6 @@
                             </div>
                         </div>
 
-                        <!-- مدیریت عناوین خدمات تخصصی -->
                         <div class="panel-card p-5 space-y-4">
                             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-canvas-border pb-3">
                                 <div>
@@ -759,10 +841,9 @@
                     </section>
 
                     <!-- تب ۳: مدیریت پرسنل، تعیین سمت سازمانی و رمز عبور -->
-                    <section id="tab-users" class="hidden space-y-6">
+                    <section id="tab-users" class="force-hidden space-y-6">
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                            <!-- فرم تعریف کارمند جدید با سمت سازمانی -->
                             <div class="lg:col-span-4 panel-card p-5 space-y-4">
                                 <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">تعریف کارمند جدید و تعیین سمت سازمانی</h3>
                                 <form onsubmit="addEmployee(event)" class="space-y-3.5">
@@ -775,9 +856,8 @@
                                         <select id="empDeptSelect" required class="form-control w-full"></select>
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-ink-muted mb-1">تعیین سمت سازمانی (انتخاب از لیست یا تایپ دلخواه)</label>
+                                        <label class="block text-xs text-ink-muted mb-1">تعیین سمت سازمانی (انتخاب یا تایپ دلخواه)</label>
                                         <input type="text" id="empRoleTitle" list="rolesDataList" required placeholder="مثال: کارشناس ارشد امور پیمان و رسیدگی" class="form-control w-full">
-                                        <span class="text-[10px] text-ink-faint mt-0.5 block">می‌توانید از لیست پیشنهادی انتخاب کنید یا هر سمت جدیدی را مستقیم تایپ نمایید.</span>
                                     </div>
                                     <div>
                                         <label class="block text-xs text-ink-muted mb-1">ساعت موظفی هدف در ماه</label>
@@ -797,7 +877,6 @@
                                 </form>
                             </div>
 
-                            <!-- جدول پرسنل با قابلیت ویرایش سمت، بخش و رمز -->
                             <div class="lg:col-span-8 panel-card p-5 space-y-4">
                                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-canvas-border pb-3">
                                     <div>
@@ -828,7 +907,7 @@
                     </section>
 
                     <!-- تب ۴: لوح جامع کارکرد کل شرکت -->
-                    <section id="tab-logs" class="hidden space-y-6">
+                    <section id="tab-logs" class="force-hidden space-y-6">
                         <div class="panel-card p-5">
                             <h3 class="text-sm font-bold text-ink mb-3">ثبت کارکرد مستقیم توسط مدیر</h3>
                             <form onsubmit="adminAddWorklog(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
@@ -887,10 +966,9 @@
                     </section>
 
                     <!-- تب ۵: تنظیمات پیشرفته مدیریت -->
-                    <section id="tab-settings" class="hidden space-y-6">
+                    <section id="tab-settings" class="force-hidden space-y-6">
                         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-                            <!-- ۱. قوانین کارکرد، اطلاعیه مدیریت و تنظیمات سازمانی -->
                             <div class="lg:col-span-7 panel-card p-6 space-y-5">
                                 <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">تنظیمات کنترلی مدیر، قوانین ثبت کارکرد و اطلاعیه سازمانی</h3>
 
@@ -936,15 +1014,14 @@
                                     <button type="submit" class="btn-solid px-5 py-2.5 text-xs">ذخیره قوانین و تنظیمات مدیریتی</button>
                                 </form>
 
-                                <!-- بانک سمت‌های سازمانی -->
                                 <div class="pt-4 border-t border-canvas-border space-y-3">
                                     <div class="flex flex-wrap items-center justify-between gap-2">
                                         <div>
                                             <div class="text-xs font-bold text-ink">بانک سمت‌های سازمانی شرکت</div>
-                                            <p class="text-[11px] text-ink-muted">سمت‌های پیش‌فرض که هنگام تعریف یا ویرایش کارمند قابل انتخاب هستند:</p>
+                                            <p class="text-[11px] text-ink-muted">سمت‌های پیش‌فرضی که هنگام تعریف یا ویرایش کارمند قابل انتخاب هستند:</p>
                                         </div>
                                         <form onsubmit="addRolePreset(event)" class="flex gap-1.5">
-                                            <input type="text" id="newRolePresetInput" required placeholder="سمت جدید (مثلاً: سرپرست کارگاه)" class="form-control text-xs py-1 w-48">
+                                            <input type="text" id="newRolePresetInput" required placeholder="سمت جدید..." class="form-control text-xs py-1 w-48">
                                             <button type="submit" class="btn-solid px-3 py-1 text-xs">افزودن سمت</button>
                                         </form>
                                     </div>
@@ -952,7 +1029,6 @@
                                 </div>
                             </div>
 
-                            <!-- ۲. لوگو، رمز مدیر، پشتیبان‌گیری و گیت‌هاب -->
                             <div class="lg:col-span-5 space-y-6">
                                 <div class="panel-card p-6 space-y-4">
                                     <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">نماد شرکت و رمز عبور مدیر ارشد</h3>
@@ -968,7 +1044,7 @@
                                                     <span>آپلود تصویر لوگو</span>
                                                     <input type="file" accept="image/*" class="hidden" onchange="uploadCustomLogo(event)">
                                                 </label>
-                                                <button onclick="resetToDefaultLogo()" class="btn-outline px-2.5 py-1.5 text-[11px]">نماد اصلی</button>
+                                                <button onclick="resetToDefaultLogo()" class="btn-outline px-2.5 py-1.5 text-[11px]">نماد پیش‌فرض</button>
                                             </div>
                                         </div>
                                     </div>
@@ -990,12 +1066,15 @@
                                 </div>
 
                                 <div class="panel-card p-6 space-y-4">
-                                    <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">انتشار در گیت‌هاب و پشتیبان‌گیری اطلاعات</h3>
-                                    <button onclick="downloadUpdatedSiteFile()" class="btn-accent w-full py-2.5 text-xs shadow-xs">
-                                        دانلود مستقیم فایل index.html با تمامی تغییرات برای گیت‌هاب
+                                    <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">مدیریت داده‌ها و پشتیبان‌گیری اطلاعات شرکت</h3>
+                                    <p class="text-[11px] text-ink-muted leading-relaxed">
+                                        برای تهیه نسخه پشتیبان از تمامی اطلاعات ثبت‌شده (پرسنل، پروژه‌ها و ساعات کارکرد) یا انتقال آن به سیستم دیگر می‌توانید از گزینه‌های زیر استفاده کنید:
+                                    </p>
+                                    <button onclick="exportCSV()" class="btn-accent w-full py-2.5 text-xs">
+                                        دریافت فایل اکسل جامع کارکردها (CSV)
                                     </button>
                                     <div class="grid grid-cols-2 gap-2 pt-1">
-                                        <button onclick="exportFullBackupJSON()" class="btn-outline py-2 text-xs">دانلود فایل پشتیبان (JSON)</button>
+                                        <button onclick="exportFullBackupJSON()" class="btn-outline py-2 text-xs">دانلود پشتیبان دیتابیس (JSON)</button>
                                         <label class="btn-outline py-2 text-xs text-center cursor-pointer">
                                             <span>بازیابی فایل پشتیبان</span>
                                             <input type="file" accept=".json" class="hidden" onchange="importFullBackupJSON(event)">
@@ -1009,9 +1088,8 @@
                 </div>
 
                 <!-- ==================== ب) پنل اختصاصی کارمندان ==================== -->
-                <div id="employeeWorkspace" class="hidden space-y-6">
+                <div id="employeeWorkspace" class="force-hidden space-y-6">
 
-                    <!-- کارت‌های وضعیت کارکرد کارمند -->
                     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
                         <div class="panel-card p-5 border-r-4 border-r-[#2A4359]">
                             <div class="text-xs text-ink-muted">مجموع ساعات ثبت‌شده شما</div>
@@ -1044,12 +1122,11 @@
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                        <!-- فرم ثبت کارکرد کارمند -->
                         <div class="lg:col-span-5 panel-card p-6 space-y-4">
                             <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">ثبت گزارش کارکرد روزانه</h3>
                             <form onsubmit="employeeAddWorklog(event)" class="space-y-4">
                                 <div>
-                                    <label class="block text-xs font-semibold text-ink-muted mb-1.5">انتخاب پروژه (فقط پروژه‌های فعال)</label>
+                                    <label class="block text-xs font-semibold text-ink-muted mb-1.5">انتخاب پروژه (پروژه‌های فعال)</label>
                                     <select id="empFormProject" required class="form-control w-full"></select>
                                 </div>
 
@@ -1080,7 +1157,6 @@
                             </form>
                         </div>
 
-                        <!-- تفکیک زمان کارمند روی پروژه‌ها + جدول سوابق -->
                         <div class="lg:col-span-7 space-y-6">
                             <div class="panel-card p-5 space-y-3">
                                 <h3 class="text-xs font-bold text-ink">تفکیک زمان صرف‌شده شما در هر پروژه</h3>
@@ -1115,6 +1191,19 @@
 
     <!-- ==================== منطق و دیتابیس سامانه ==================== -->
     <script>
+        // تابع کمکی قطعی برای نمایش/مخفی‌سازی بخش‌ها (رفع کامل باگ باقی ماندن صفحه ورود)
+        function setElementVisibility(id, isVisible, displayMode = 'block') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (isVisible) {
+                el.classList.remove('force-hidden', 'hidden');
+                el.style.display = displayMode;
+            } else {
+                el.classList.add('force-hidden');
+                el.style.display = 'none';
+            }
+        }
+
         // ۱. نماد رسمی مهندسان مشاور پارس پرنون
         const PARS_PARNOUN_OFFICIAL_LOGO = "data:image/svg+xml;utf8," + encodeURIComponent(`
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260" width="100%" height="100%">
@@ -1140,7 +1229,7 @@
             <text x="130" y="242" text-anchor="middle" fill="#141414" font-family="'B Nazanin', 'Vazirmatn', Tahoma, serif" font-size="31" font-weight="bold">مهندسان مشاور</text>
         </svg>`);
 
-        // ۲. دیتابیس اولیه با بودجه زمانی پروژه‌ها، سمت‌های سازمانی و تنظیمات پیشرفته مدیر
+        // ۲. دیتابیس اولیه
         const INITIAL_DATABASE = {
             companyName: "مهندسان مشاور پارس پرنون",
             companySub: "سامانه کنترل زمان پروژه‌ها، مدیریت واحدهای فنی و ثبت کارکرد پرسنل",
@@ -1199,19 +1288,20 @@
                 { id: "emp_5", name: "سعید منتظری", deptId: "dept_fin", role: "کارشناس ارشد مالی و حسابداری", targetHours: 176, username: "montazeri", password: "1234", active: true }
             ],
             worklogs: [
-                { id: "log_101", empId: "emp_1", projectCode: "PP-101", category: "طراحی معماری (فاز ۱ و ۲)", date: "20 / 07 / 1405", hours: 6.5, desc: "تکمیل پلان‌های اجرایی طبقات و دیتیل‌های معماری" },
-                { id: "log_102", empId: "emp_1", projectCode: "PP-101", category: "کنترل پروژه و گزارش‌دهی مدیریت", date: "21 / 07 / 1405", hours: 4.0, desc: "بررسی و تطبیق نقشه‌های معماری با سازه" },
+                { id: "log_101", empId: "emp_1", projectCode: "PP-101", category: "طراحی معماری (فاز ۱ و ۲)", date: "18 / 07 / 1405", hours: 6.5, desc: "تکمیل پلان‌های اجرایی طبقات و دیتیل‌های معماری" },
+                { id: "log_102", empId: "emp_1", projectCode: "PP-101", category: "کنترل پروژه و گزارش‌دهی مدیریت", date: "20 / 07 / 1405", hours: 4.0, desc: "بررسی و تطبیق نقشه‌های معماری با سازه" },
                 { id: "log_103", empId: "emp_2", projectCode: "PP-102", category: "مدل‌سازی سه‌بعدی و رندرینگ", date: "21 / 07 / 1405", hours: 5.5, desc: "مدل‌سازی حجمی سردر ورودی و محوطه" },
                 { id: "log_104", empId: "emp_3", projectCode: "PP-201", category: "محاسبات تاخیرات و بخشنامه ۵۰۹۰", date: "22 / 07 / 1405", hours: 7.5, desc: "بررسی تاخیرات مجاز و غیرمجاز اقساط پیش‌پرداخت طبق بخشنامه ۵۰۹۰" },
                 { id: "log_105", empId: "emp_3", projectCode: "PP-201", category: "تنظیم قراردادها و امور پیمان", date: "23 / 07 / 1405", hours: 5.0, desc: "تدوین گزارش کارشناسی تمدید مدت پیمان" },
-                { id: "log_106", empId: "emp_4", projectCode: "PP-202", category: "رسیدگی به صورت‌وضعیت و تعدیل", date: "23 / 07 / 1405", hours: 6.0, desc: "کنترل احجام و ریزشت متره صورت‌وضعیت شماره ۴" },
-                { id: "log_107", empId: "emp_5", projectCode: "PP-301", category: "ثبت اسناد حسابداری و مالی", date: "24 / 07 / 1405", hours: 5.0, desc: "تنظیم گزارش مالی پروژه‌ها و تطبیق صورت‌حساب‌ها" }
+                { id: "log_106", empId: "emp_4", projectCode: "PP-202", category: "رسیدگی به صورت‌وضعیت و تعدیل", date: "24 / 07 / 1405", hours: 6.0, desc: "کنترل احجام و ریزشت متره صورت‌وضعیت شماره ۴" },
+                { id: "log_107", empId: "emp_5", projectCode: "PP-301", category: "ثبت اسناد حسابداری و مالی", date: "25 / 07 / 1405", hours: 5.0, desc: "تنظیم گزارش مالی پروژه‌ها و تطبیق صورت‌حساب‌ها" }
             ]
         };
 
-        const DB_KEY = "PARS_PARNOUN_PRO_DB_V6";
+        const DB_KEY = "PARS_PARNOUN_PRO_DB_V7";
         let db = loadDatabase();
         let activeSession = null;
+        let currentQuickPeriod = 'ALL';
         let charts = {};
 
         function loadDatabase() {
@@ -1235,29 +1325,68 @@
             localStorage.setItem(DB_KEY, JSON.stringify(db));
         }
 
-        // ۳. فرمت تاریخ روز / ماه / سال
-        function getTodayFormatted() {
+        // ۳. توابع تاریخ شمسی با فرمت دقیق «روز / ماه / سال» و تبدیل به عدد جهت مقایسه بازه زمانی
+        function getTodayParts() {
             try {
                 const parts = new Intl.DateTimeFormat('fa-IR-u-nu-latn', {
                     year: 'numeric',
                     month: '2-digit',
                     day: '2-digit'
                 }).formatToParts(new Date());
-                const day = parts.find(p => p.type === 'day')?.value || '25';
-                const month = parts.find(p => p.type === 'month')?.value || '07';
-                const year = parts.find(p => p.type === 'year')?.value || '1405';
-                return `${day} / ${month} / ${year}`;
+                const day = parseInt(parts.find(p => p.type === 'day')?.value || '25', 10);
+                const month = parseInt(parts.find(p => p.type === 'month')?.value || '7', 10);
+                const year = parseInt(parts.find(p => p.type === 'year')?.value || '1405', 10);
+                return { day, month, year };
             } catch {
-                return "25 / 07 / 1405";
+                return { day: 25, month: 7, year: 1405 };
             }
+        }
+
+        function formatJalaliDate(d, m, y) {
+            return `${String(d).padStart(2, '0')} / ${String(m).padStart(2, '0')} / ${y}`;
+        }
+
+        function getTodayFormatted() {
+            const { day, month, year } = getTodayParts();
+            return formatJalaliDate(day, month, year);
+        }
+
+        // تبدیل رشته تاریخ «روز / ماه / سال» به عدد قابل مقایسه YYYYMMDD
+        function parseDateToNumber(dateStr) {
+            if (!dateStr) return null;
+            const normalized = String(dateStr)
+                .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                .replace(/\s+/g, '');
+            const parts = normalized.split(/[\/\-]/);
+            if (parts.length !== 3) return null;
+
+            let d, m, y;
+            if (parts[0].length === 4) {
+                // اگر کاربر به فرم سال/ماه/روز وارد کرده باشد
+                y = parseInt(parts[0], 10);
+                m = parseInt(parts[1], 10);
+                d = parseInt(parts[2], 10);
+            } else {
+                // فرمت استاندارد روز / ماه / سال
+                d = parseInt(parts[0], 10);
+                m = parseInt(parts[1], 10);
+                y = parseInt(parts[2], 10);
+            }
+            if (isNaN(d) || isNaN(m) || isNaN(y)) return null;
+            return (y * 10000) + (m * 100) + d;
         }
 
         // ۴. راه‌اندازی اولیه
         window.addEventListener('DOMContentLoaded', () => {
+            // اطمینان از نمایش صفحه ورود و مخفی بودن پنل در ابتدای بارگذاری
+            setElementVisibility('loginScreen', true, 'flex');
+            setElementVisibility('appShell', false);
+
             setTheme(db.theme || 'default', false);
             applyBranding();
             populateHourSelects();
             renderRoleDatalist();
+
             const today = getTodayFormatted();
             document.getElementById('loginTodayDate').textContent = today;
             document.getElementById('headerTodayDate').textContent = today;
@@ -1278,7 +1407,7 @@
             }
             if (notify) {
                 const labels = {
-                    default: 'سنگ گرم معماری (بدون سفیدی تند)',
+                    default: 'سنگ گرم معماری',
                     slate: 'خاکستری-سرمه‌ای ملایم',
                     taupe: 'خاکی و برنزی مات',
                     dark: 'تیره مهندسی'
@@ -1300,13 +1429,11 @@
                 <span class="px-2 py-0.5 rounded bg-white/10 text-[#EAE6DF] text-[10px]">${d.name}</span>
             `).join('');
 
-            // بنر اطلاعیه
-            const banner = document.getElementById('announcementBanner');
             if (db.settings?.announcement && db.settings.announcement.trim() !== '') {
                 document.getElementById('announcementText').textContent = db.settings.announcement;
-                banner.classList.remove('hidden');
+                setElementVisibility('announcementBanner', true, 'flex');
             } else {
-                banner.classList.add('hidden');
+                setElementVisibility('announcementBanner', false);
             }
         }
 
@@ -1330,13 +1457,12 @@
             inp.type = inp.type === 'password' ? 'text' : 'password';
         }
 
-        // ۵. ورود به سامانه
+        // ۵. ورود و خروج بدون باگ نمایشی
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('loginUser').value.trim();
             const p = document.getElementById('loginPass').value.trim();
-            const err = document.getElementById('loginError');
-            err.classList.add('hidden');
+            setElementVisibility('loginError', false);
 
             if (u.toLowerCase() === db.admin.username.toLowerCase() && p === db.admin.password) {
                 activeSession = { type: 'admin', user: db.admin };
@@ -1347,8 +1473,9 @@
             const emp = db.employees.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
             if (emp) {
                 if (emp.active === false) {
+                    const err = document.getElementById('loginError');
                     err.textContent = "حساب کاربری شما توسط مدیریت غیرفعال شده است.";
-                    err.classList.remove('hidden');
+                    setElementVisibility('loginError', true, 'block');
                     return;
                 }
                 activeSession = { type: 'employee', user: emp };
@@ -1356,22 +1483,26 @@
                 return;
             }
 
+            const err = document.getElementById('loginError');
             err.textContent = "نام کاربری یا رمز عبور وارد شده صحیح نمی‌باشد.";
-            err.classList.remove('hidden');
+            setElementVisibility('loginError', true, 'block');
         }
 
         function enterApplication() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('appShell').classList.remove('hidden');
+            // مخفی کردن قطعی صفحه ورود و نمایش محیط برنامه
+            setElementVisibility('loginScreen', false);
+            setElementVisibility('appShell', true, 'flex');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
             applyBranding();
             populateHourSelects();
 
             if (activeSession.type === 'admin') {
-                document.getElementById('adminNav').classList.remove('hidden');
-                document.getElementById('adminQuickActions').classList.remove('hidden');
-                document.getElementById('adminWorkspace').classList.remove('hidden');
-                document.getElementById('empSidebarBox').classList.add('hidden');
-                document.getElementById('employeeWorkspace').classList.add('hidden');
+                setElementVisibility('adminNav', true, 'block');
+                setElementVisibility('adminQuickActions', true, 'flex');
+                setElementVisibility('adminWorkspace', true, 'block');
+                setElementVisibility('empSidebarBox', false);
+                setElementVisibility('employeeWorkspace', false);
 
                 document.getElementById('sidebarUserName').textContent = db.admin.name;
                 document.getElementById('sidebarUserRole').textContent = "مدیر ارشد شرکت";
@@ -1384,11 +1515,11 @@
                 const emp = activeSession.user;
                 const dept = db.departments.find(d => d.id === emp.deptId);
 
-                document.getElementById('adminNav').classList.add('hidden');
-                document.getElementById('adminQuickActions').classList.add('hidden');
-                document.getElementById('adminWorkspace').classList.add('hidden');
-                document.getElementById('empSidebarBox').classList.remove('hidden');
-                document.getElementById('employeeWorkspace').classList.remove('hidden');
+                setElementVisibility('adminNav', false);
+                setElementVisibility('adminQuickActions', false);
+                setElementVisibility('adminWorkspace', false);
+                setElementVisibility('empSidebarBox', true, 'block');
+                setElementVisibility('employeeWorkspace', true, 'block');
 
                 document.getElementById('sidebarUserName').textContent = emp.name;
                 document.getElementById('sidebarUserRole').textContent = emp.role;
@@ -1406,8 +1537,9 @@
         function logout() {
             activeSession = null;
             document.getElementById('loginPass').value = '';
-            document.getElementById('appShell').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
+            setElementVisibility('appShell', false);
+            setElementVisibility('loginScreen', true, 'flex');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             applyBranding();
         }
 
@@ -1422,7 +1554,7 @@
             };
 
             tabs.forEach(t => {
-                document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tabId);
+                setElementVisibility(`tab-${t}`, t === tabId, 'block');
                 const nav = document.getElementById(`nav-${t}`);
                 if (nav) nav.classList.toggle('active', t === tabId);
             });
@@ -1448,7 +1580,12 @@
                 db.projects.map(p => `<option value="${p.code}">[${p.code}] ${p.name}</option>`).join('');
 
             document.getElementById('fltUser').innerHTML = `<option value="ALL">همه کارشناسان (${db.employees.length})</option>` +
-                db.employees.map(u => `<option value="${u.id}">${u.name} (${u.role})</option>`).join('');
+                db.employees.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
+
+            // جمع‌آوری تمام سمت‌های موجود برای فیلتر سمت سازمانی
+            const uniqueRoles = [...new Set([...(db.rolePresets || []), ...db.employees.map(e => e.role).filter(Boolean)])];
+            document.getElementById('fltRole').innerHTML = `<option value="ALL">همه سمت‌های سازمانی</option>` +
+                uniqueRoles.map(r => `<option value="${r}">${r}</option>`).join('');
 
             document.getElementById('fltCategory').innerHTML = `<option value="ALL">همه فعالیت‌های تخصصی</option>` +
                 db.categories.map(c => `<option value="${c}">${c}</option>`).join('');
@@ -1463,20 +1600,87 @@
             document.getElementById('admLogCategory').innerHTML = db.categories.map(c => `<option value="${c}">${c}</option>`).join('');
         }
 
-        function resetFilters() {
-            document.getElementById('fltDept').value = 'ALL';
-            document.getElementById('fltProject').value = 'ALL';
-            document.getElementById('fltUser').value = 'ALL';
-            document.getElementById('fltCategory').value = 'ALL';
+        // ۶. مدیریت فیلتر دوره زمانی (Quick Period & Date Range)
+        function setQuickPeriod(periodKey) {
+            currentQuickPeriod = periodKey;
+            const periods = ['ALL', 'TODAY', 'WEEK', 'MONTH', 'SEASON', 'YEAR'];
+            periods.forEach(p => {
+                const btn = document.getElementById(`prd-${p}`);
+                if (btn) btn.classList.toggle('active', p === periodKey);
+            });
+
+            const { day, month, year } = getTodayParts();
+            const fromInput = document.getElementById('fltDateFrom');
+            const toInput = document.getElementById('fltDateTo');
+
+            if (periodKey === 'ALL') {
+                fromInput.value = '';
+                toInput.value = '';
+            } else if (periodKey === 'TODAY') {
+                const todayStr = formatJalaliDate(day, month, year);
+                fromInput.value = todayStr;
+                toInput.value = todayStr;
+            } else if (periodKey === 'WEEK') {
+                let dFrom = day - 7;
+                let mFrom = month;
+                let yFrom = year;
+                if (dFrom < 1) {
+                    mFrom -= 1;
+                    if (mFrom < 1) { mFrom = 12; yFrom -= 1; }
+                    dFrom = 30 + dFrom;
+                }
+                fromInput.value = formatJalaliDate(dFrom, mFrom, yFrom);
+                toInput.value = formatJalaliDate(day, month, year);
+            } else if (periodKey === 'MONTH') {
+                fromInput.value = formatJalaliDate(1, month, year);
+                toInput.value = formatJalaliDate(31, month, year);
+            } else if (periodKey === 'SEASON') {
+                let mStart = month - 2;
+                let yStart = year;
+                if (mStart < 1) { mStart += 12; yStart -= 1; }
+                fromInput.value = formatJalaliDate(1, mStart, yStart);
+                toInput.value = formatJalaliDate(31, month, year);
+            } else if (periodKey === 'YEAR') {
+                fromInput.value = formatJalaliDate(1, 1, year);
+                toInput.value = formatJalaliDate(30, 12, year);
+            }
+
             refreshDashboard();
         }
 
-        // ۶. تحلیل زمان مصرفی پروژه‌ها و رسم ۶ نمودار حرفه‌ای
+        function onCustomDateInput() {
+            const periods = ['ALL', 'TODAY', 'WEEK', 'MONTH', 'SEASON', 'YEAR'];
+            periods.forEach(p => document.getElementById(`prd-${p}`)?.classList.remove('active'));
+            refreshDashboard();
+        }
+
+        function resetFilters() {
+            document.getElementById('fltDept').value = 'ALL';
+            document.getElementById('fltProject').value = 'ALL';
+            document.getElementById('fltProjStatus').value = 'ALL';
+            document.getElementById('fltUser').value = 'ALL';
+            document.getElementById('fltRole').value = 'ALL';
+            document.getElementById('fltCategory').value = 'ALL';
+            document.getElementById('fltMinHours').value = '0';
+            document.getElementById('fltSearchText').value = '';
+            setQuickPeriod('ALL');
+        }
+
+        // ۷. اعمال تمام ۱۱ فیلتر و بروزرسانی داشبورد و نمودارها
         function refreshDashboard() {
             const fDept = document.getElementById('fltDept').value || 'ALL';
             const fProj = document.getElementById('fltProject').value || 'ALL';
+            const fProjStatus = document.getElementById('fltProjStatus').value || 'ALL';
             const fUser = document.getElementById('fltUser').value || 'ALL';
+            const fRole = document.getElementById('fltRole').value || 'ALL';
             const fCat = document.getElementById('fltCategory').value || 'ALL';
+            const fMinHours = parseFloat(document.getElementById('fltMinHours').value || '0');
+            const fSearch = (document.getElementById('fltSearchText').value || '').trim().toLowerCase();
+
+            const rawDateFrom = document.getElementById('fltDateFrom').value.trim();
+            const rawDateTo = document.getElementById('fltDateTo').value.trim();
+            const numDateFrom = parseDateToNumber(rawDateFrom);
+            const numDateTo = parseDateToNumber(rawDateTo);
 
             const filteredLogs = db.worklogs.filter(l => {
                 const emp = db.employees.find(e => e.id === l.empId);
@@ -1485,19 +1689,46 @@
 
                 if (fDept !== 'ALL' && dId !== fDept) return false;
                 if (fProj !== 'ALL' && l.projectCode !== fProj) return false;
+                if (fProjStatus !== 'ALL') {
+                    const st = proj?.status || 'active';
+                    if (st !== fProjStatus) return false;
+                }
                 if (fUser !== 'ALL' && l.empId !== fUser) return false;
+                if (fRole !== 'ALL' && (emp?.role || '') !== fRole) return false;
                 if (fCat !== 'ALL' && l.category !== fCat) return false;
+                if (Number(l.hours) < fMinHours) return false;
+
+                if (fSearch) {
+                    const combined = `${emp?.name || ''} ${proj?.name || ''} ${l.category} ${l.desc || ''}`.toLowerCase();
+                    if (!combined.includes(fSearch)) return false;
+                }
+
+                // فیلتر دوره زمانی (از تاریخ ... تا تاریخ ...)
+                if (numDateFrom !== null || numDateTo !== null) {
+                    const logDateNum = parseDateToNumber(l.date);
+                    if (logDateNum !== null) {
+                        if (numDateFrom !== null && logDateNum < numDateFrom) return false;
+                        if (numDateTo !== null && logDateNum > numDateTo) return false;
+                    }
+                }
+
                 return true;
             });
+
+            // بروزرسانی متن خلاصه فیلتر
+            const summaryEl = document.getElementById('activeFilterSummaryText');
+            const dateRangeNote = (rawDateFrom || rawDateTo)
+                ? ` | بازه زمانی: ${rawDateFrom || 'ابتدا'} تا ${rawDateTo || 'انتها'}`
+                : ' | بازه زمانی: کل دوره فعالیت';
+            summaryEl.textContent = `نمایش ${filteredLogs.length} رکورد از مجموع ${db.worklogs.length} کارکرد ثبت‌شده${dateRangeNote}`;
 
             const totalHours = filteredLogs.reduce((s, l) => s + Number(l.hours || 0), 0);
             const totalBudget = db.projects.reduce((s, p) => s + Number(p.budgetHours || 100), 0);
 
             document.getElementById('kpiTotalHours').textContent = totalHours.toFixed(1);
             const budgetPct = totalBudget > 0 ? ((totalHours / totalBudget) * 100).toFixed(1) : 0;
-            document.getElementById('kpiBudgetRatio').textContent = `معادل ${budgetPct}% از کل بودجه زمانی (${totalBudget} ساعت)`;
+            document.getElementById('kpiBudgetRatio').textContent = `معادل ${budgetPct}% از کل بودجه زمانی پروژه‌ها (${totalBudget} ساعت)`;
 
-            // پیدا کردن پرمصرف‌ترین پروژه
             const projHoursMap = {};
             db.projects.forEach(p => projHoursMap[p.code] = 0);
             filteredLogs.forEach(l => {
@@ -1515,33 +1746,39 @@
 
             const topProjObj = db.projects.find(p => p.code === topProjCode);
             const topSharePct = totalHours > 0 && topProjHours > 0 ? ((topProjHours / totalHours) * 100).toFixed(1) : 0;
-            document.getElementById('kpiTopProjectName').textContent = topProjObj ? `[${topProjObj.code}] ${topProjObj.name}` : 'بدون داده';
-            document.getElementById('kpiTopProjectStats').textContent = `${Math.max(0, topProjHours).toFixed(1)} ساعت (${topSharePct}% از کل زمان شرکت)`;
+            document.getElementById('kpiTopProjectName').textContent = topProjObj && topProjHours > 0 ? `[${topProjObj.code}] ${topProjObj.name}` : 'بدون کارکرد در این فیلتر';
+            document.getElementById('kpiTopProjectStats').textContent = `${Math.max(0, topProjHours).toFixed(1)} ساعت (${topSharePct}% از کل زمان انتخابی)`;
 
             const avgPerProj = db.projects.length > 0 ? (totalHours / db.projects.length).toFixed(1) : '0.0';
             document.getElementById('kpiAvgProjHours').textContent = avgPerProj;
             const activeProjs = db.projects.filter(p => p.status !== 'completed').length;
             document.getElementById('kpiActiveProjsNote').textContent = `در ${activeProjs} پروژه فعال از مجموع ${db.projects.length} پروژه`;
 
-            document.getElementById('kpiStaffCount').textContent = db.employees.length;
+            const activeStaffInFilter = new Set(filteredLogs.map(l => l.empId)).size;
+            document.getElementById('kpiStaffCount').textContent = activeStaffInFilter;
             document.getElementById('kpiLogsCount').textContent = filteredLogs.length;
 
-            renderProjectBreakdownTable(filteredLogs, totalHours);
+            renderProjectBreakdownTable(filteredLogs, totalHours, fDept, fProj, fProjStatus);
             renderAllSixCharts(filteredLogs, totalHours);
         }
 
-        // جدول کالبدشکافی دقیق زمان هر پروژه
-        function renderProjectBreakdownTable(logs, totalCompanyHours) {
+        function renderProjectBreakdownTable(logs, totalCompanyHours, fDept, fProj, fProjStatus) {
             const tbody = document.getElementById('projectTimeBreakdownBody');
 
-            const projectRows = db.projects.map(p => {
+            const visibleProjects = db.projects.filter(p => {
+                if (fDept !== 'ALL' && p.deptId !== fDept) return false;
+                if (fProj !== 'ALL' && p.code !== fProj) return false;
+                if (fProjStatus !== 'ALL' && (p.status || 'active') !== fProjStatus) return false;
+                return true;
+            });
+
+            const projectRows = visibleProjects.map(p => {
                 const pLogs = logs.filter(l => l.projectCode === p.code);
                 const spent = pLogs.reduce((s, l) => s + Number(l.hours), 0);
                 const budget = Number(p.budgetHours || 100);
                 const shareOfCompany = totalCompanyHours > 0 ? ((spent / totalCompanyHours) * 100) : 0;
                 const budgetBurn = budget > 0 ? ((spent / budget) * 100) : 0;
 
-                // نفرات درگیر در این پروژه
                 const involvedEmpIds = [...new Set(pLogs.map(l => l.empId))];
                 const involvedNames = involvedEmpIds.map(id => {
                     const e = db.employees.find(x => x.id === id);
@@ -1575,7 +1812,7 @@
                         <td class="py-3 px-3">
                             <div class="flex items-center justify-between text-[11px] mb-1">
                                 <span class="font-bold text-ink">${shareOfCompany.toFixed(1)}%</span>
-                                <span class="text-ink-faint">از کل زمان شرکت</span>
+                                <span class="text-ink-faint">از زمان این دوره</span>
                             </div>
                             <div class="w-full h-2 rounded-full bg-black/10 overflow-hidden">
                                 <div class="h-full bg-[#2A4359]" style="width: ${Math.min(100, shareOfCompany)}%"></div>
@@ -1591,7 +1828,7 @@
                             </div>
                         </td>
                         <td class="py-3 px-3 text-[11px] text-ink-muted">
-                            ${involvedNames.length > 0 ? involvedNames.join('، ') : '<span class="text-ink-faint">بدون ثبت</span>'}
+                            ${involvedNames.length > 0 ? involvedNames.join('، ') : '<span class="text-ink-faint">بدون ثبت در این بازه</span>'}
                         </td>
                     </tr>
                 `;
@@ -1603,7 +1840,6 @@
             const palette = ['#2A4359', '#B68D40', '#2E6F65', '#A84A3B', '#5E503F', '#4A6B82', '#7A6C5D'];
             const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim() || '#4A525D';
 
-            // ۱. نمودار سهم هر پروژه از کل زمان شرکت
             const projLabels = db.projects.map(p => `${p.code}: ${p.name}`);
             const projHours = db.projects.map(p => logs.filter(l => l.projectCode === p.code).reduce((s, l) => s + Number(l.hours), 0));
 
@@ -1629,7 +1865,7 @@
                                 label: function(ctx) {
                                     const val = ctx.parsed || 0;
                                     const pct = totalHours > 0 ? ((val / totalHours) * 100).toFixed(1) : 0;
-                                    return ` ${val} ساعت (${pct}% از کل زمان شرکت)`;
+                                    return ` ${val} ساعت (${pct}% از کل زمان)`;
                                 }
                             }
                         }
@@ -1637,7 +1873,6 @@
                 }
             });
 
-            // ۲. نمودار مقایسه زمان واقعی با سقف بودجه زمانی هر پروژه
             const projShortCodes = db.projects.map(p => p.code);
             const projBudgets = db.projects.map(p => Number(p.budgetHours || 100));
 
@@ -1647,18 +1882,8 @@
                 data: {
                     labels: projShortCodes,
                     datasets: [
-                        {
-                            label: 'ساعت واقعی صرف‌شده',
-                            data: projHours,
-                            backgroundColor: '#2A4359',
-                            borderRadius: 5
-                        },
-                        {
-                            label: 'بودجه زمانی برآوردی (سقف)',
-                            data: projBudgets,
-                            backgroundColor: '#B68D40',
-                            borderRadius: 5
-                        }
+                        { label: 'ساعت واقعی صرف‌شده', data: projHours, backgroundColor: '#2A4359', borderRadius: 5 },
+                        { label: 'بودجه زمانی برآوردی (سقف)', data: projBudgets, backgroundColor: '#B68D40', borderRadius: 5 }
                     ]
                 },
                 options: {
@@ -1674,8 +1899,7 @@
                 }
             });
 
-            // ۳. نمودار کارکرد پرسنل به همراه سمت
-            const staffLabels = db.employees.map(e => `${e.name}`);
+            const staffLabels = db.employees.map(e => e.name);
             const staffData = db.employees.map(e => logs.filter(l => l.empId === e.id).reduce((s, l) => s + Number(l.hours), 0));
 
             if (charts.staffHours) charts.staffHours.destroy();
@@ -1683,13 +1907,7 @@
                 type: 'bar',
                 data: {
                     labels: staffLabels,
-                    datasets: [{
-                        label: 'ساعت کارکرد ثبت‌شده',
-                        data: staffData,
-                        backgroundColor: '#2E6F65',
-                        borderRadius: 5,
-                        barThickness: 18
-                    }]
+                    datasets: [{ label: 'ساعت کارکرد', data: staffData, backgroundColor: '#2E6F65', borderRadius: 5, barThickness: 18 }]
                 },
                 options: {
                     indexAxis: 'y',
@@ -1703,25 +1921,16 @@
                 }
             });
 
-            // ۴. نمودار تفکیک فعالیت‌های تخصصی
             const catMap = {};
             db.categories.forEach(c => catMap[c] = 0);
-            logs.forEach(l => {
-                catMap[l.category] = (catMap[l.category] || 0) + Number(l.hours);
-            });
+            logs.forEach(l => { catMap[l.category] = (catMap[l.category] || 0) + Number(l.hours); });
 
             if (charts.categoryHours) charts.categoryHours.destroy();
             charts.categoryHours = new Chart(document.getElementById('chartCategoryHours'), {
                 type: 'bar',
                 data: {
                     labels: Object.keys(catMap),
-                    datasets: [{
-                        label: 'ساعت صرف‌شده',
-                        data: Object.values(catMap),
-                        backgroundColor: '#B68D40',
-                        borderRadius: 5,
-                        barThickness: 16
-                    }]
+                    datasets: [{ label: 'ساعت صرف‌شده', data: Object.values(catMap), backgroundColor: '#B68D40', borderRadius: 5, barThickness: 16 }]
                 },
                 options: {
                     indexAxis: 'y',
@@ -1735,7 +1944,6 @@
                 }
             });
 
-            // ۵. نمودار سهم بخش‌های شرکت
             const deptMap = {};
             db.departments.forEach(d => deptMap[d.name] = 0);
             logs.forEach(l => {
@@ -1751,21 +1959,15 @@
                 type: 'pie',
                 data: {
                     labels: Object.keys(deptMap),
-                    datasets: [{
-                        data: Object.values(deptMap),
-                        backgroundColor: ['#2A4359', '#B68D40', '#2E6F65', '#A84A3B', '#5E503F']
-                    }]
+                    datasets: [{ data: Object.values(deptMap), backgroundColor: ['#2A4359', '#B68D40', '#2E6F65', '#A84A3B', '#5E503F'] }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { font: { family: 'Vazirmatn', size: 11 }, color: textColor } }
-                    }
+                    plugins: { legend: { position: 'bottom', labels: { font: { family: 'Vazirmatn', size: 11 }, color: textColor } } }
                 }
             });
 
-            // ۶. نمودار روند روزانه ثبت کارکرد
             const dateMap = {};
             [...logs].reverse().forEach(l => {
                 dateMap[l.date] = (dateMap[l.date] || 0) + Number(l.hours);
@@ -1798,7 +2000,7 @@
             });
         }
 
-        // ۷. مدیریت پروژه‌ها، بودجه زمانی و بخش‌ها
+        // ۸. مدیریت پروژه‌ها، بودجه زمانی و بخش‌ها
         function renderProjectsAndDeptsTab() {
             const pTable = document.getElementById('projectsManageTable');
             pTable.innerHTML = db.projects.map(p => {
@@ -1867,7 +2069,7 @@
         function editProjectBudget(code) {
             const proj = db.projects.find(p => p.code === code);
             if (!proj) return;
-            const newB = prompt(`سقف بودجه زمانی جدید (بر حسب ساعت) برای پروژه «${proj.name}» را وارد نمایید:`, proj.budgetHours || 100);
+            const newB = prompt(`سقف بودجه زمانی جدید (ساعت) برای پروژه «${proj.name}» را وارد نمایید:`, proj.budgetHours || 100);
             if (newB !== null && !isNaN(Number(newB)) && Number(newB) > 0) {
                 proj.budgetHours = Number(newB);
                 saveDatabase();
@@ -1934,7 +2136,7 @@
             refreshAllAdminViews();
         }
 
-        // ۸. مدیریت پرسنل، سمت سازمانی و رمز عبور
+        // ۹. مدیریت پرسنل، سمت سازمانی و رمز عبور
         function renderEmployeesTab() {
             const tbody = document.getElementById('employeesTableBody');
             tbody.innerHTML = db.employees.map(emp => {
@@ -1987,7 +2189,6 @@
                 return;
             }
 
-            // اگر سمت جدیدی تایپ شده، به بانک سمت‌ها هم اضافه شود
             if (role && !db.rolePresets.includes(role)) {
                 db.rolePresets.push(role);
                 renderRoleDatalist();
@@ -2021,11 +2222,11 @@
             document.getElementById('editEmpUser').value = emp.username;
             document.getElementById('editEmpPass').value = emp.password;
             document.getElementById('editEmpActive').value = emp.active !== false ? 'true' : 'false';
-            document.getElementById('editEmployeeModal').classList.remove('hidden');
+            setElementVisibility('editEmployeeModal', true, 'flex');
         }
 
         function closeEditEmployeeModal() {
-            document.getElementById('editEmployeeModal').classList.add('hidden');
+            setElementVisibility('editEmployeeModal', false);
         }
 
         function saveEditedEmployee(e) {
@@ -2067,7 +2268,7 @@
             showToast("حساب کارمند حذف شد.");
         }
 
-        // ۹. مدیریت کارکردها
+        // ۱۰. مدیریت کارکردها
         function adminAddWorklog(e) {
             e.preventDefault();
             const empId = document.getElementById('admLogUser').value;
@@ -2136,7 +2337,7 @@
             showToast("رکورد کارکرد حذف شد.");
         }
 
-        // ۱۰. پنل کارمند
+        // ۱۱. پنل کارمند
         function refreshEmployeeWorkspace() {
             const emp = activeSession.user;
             const activeProjects = db.projects.filter(p => p.status !== 'completed');
@@ -2156,7 +2357,6 @@
             document.getElementById('empProjectsCount').textContent = uniqueProjs;
             document.getElementById('empTotalLogs').textContent = myLogs.length;
 
-            // نوار تفکیک زمان کارمند در هر پروژه
             const barsBox = document.getElementById('empProjectBreakdownBars');
             const myProjMap = {};
             myLogs.forEach(l => {
@@ -2183,7 +2383,6 @@
                 }).join('');
             }
 
-            // جدول کارکردهای کارمند
             const tbody = document.getElementById('empLogsTableBody');
             tbody.innerHTML = myLogs.map(l => {
                 const proj = db.projects.find(p => p.code === l.projectCode);
@@ -2227,7 +2426,7 @@
             showToast("گزارش کارکرد شما با موفقیت ثبت شد.");
         }
 
-        // ۱۱. تنظیمات پیشرفته مدیر، بانک سمت‌ها و خروجی گیت‌هاب
+        // ۱۲. تنظیمات پیشرفته مدیر و خروجی اکسل
         function loadSettingsIntoForm() {
             document.getElementById('cfgCompanyName').value = db.companyName || '';
             document.getElementById('cfgCompanySub').value = db.companySub || '';
@@ -2275,6 +2474,7 @@
                 db.rolePresets.push(val);
                 saveDatabase();
                 renderRolePresetsList();
+                populateAdminDropdowns();
             }
             document.getElementById('newRolePresetInput').value = '';
             showToast(`سمت سازمانی «${val}» به لیست اضافه شد.`);
@@ -2284,6 +2484,7 @@
             db.rolePresets.splice(idx, 1);
             saveDatabase();
             renderRolePresetsList();
+            populateAdminDropdowns();
         }
 
         function uploadCustomLogo(event) {
@@ -2368,1745 +2569,12 @@
             reader.readAsText(file);
         }
 
-        function downloadUpdatedSiteFile() {
-            let fullHtml = document.documentElement.outerHTML;
-            const updatedInit = `const INITIAL_DATABASE = ${JSON.stringify(db, null, 4)};`;
-            fullHtml = fullHtml.replace(/const INITIAL_DATABASE = \{[\s\S]*?\n        \};/, updatedInit);
-
-            const blob = new Blob(["<!DOCTYPE html>\n" + fullHtml], { type: "text/html;charset=utf-8" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = "index.html";
-            a.click();
-            showToast("فایل index.html آماده گیت‌هاب دانلود شد.");
-        }
-
         function showToast(msg) {
             const box = document.getElementById('toastBox');
             const el = document.createElement('div');
             el.className = "panel-card px-4 py-3 text-xs font-bold text-ink border-r-4 border-r-[#B68D40] shadow-lg pointer-events-auto";
             el.textContent = msg;
             box.appendChild(el);
-            setTimeout(() => el.remove(), 3500);
-        }
-    </script>
-</body>
-</html><!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مهندسان مشاور پارس پرنون | سامانه مدیریت پروژه و کارکرد</title>
-
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Vazirmatn & B Nazanin Fallback Font -->
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Vazirmatn', 'B Nazanin', 'Tahoma', 'sans-serif'],
-                        nazanin: ['B Nazanin', 'Vazirmatn', 'serif']
-                    },
-                    colors: {
-                        canvas: {
-                            DEFAULT: 'var(--bg-canvas)',
-                            surface: 'var(--bg-surface)',
-                            subtle: 'var(--bg-subtle)',
-                            border: 'var(--border-color)'
-                        },
-                        ink: {
-                            DEFAULT: '#1E2022',
-                            muted: '#525860',
-                            faint: '#878D96'
-                        },
-                        accent: {
-                            DEFAULT: '#2B3A42',
-                            hover: '#1E292F',
-                            warm: '#8C6D46',
-                            sage: '#48655A'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        :root {
-            /* حالت پیش‌فرض: بوم سنگی گرم (ضد خستگی چشم) */
-            --bg-canvas: #F2F0EA;
-            --bg-surface: #FAF9F6;
-            --bg-subtle: #EAE7DF;
-            --border-color: #DFDCD3;
-        }
-
-        [data-theme="silver"] {
-            /* حالت دوم: بوم نقره‌ای ملایم */
-            --bg-canvas: #EEF0F2;
-            --bg-surface: #F8F9FA;
-            --bg-subtle: #E2E6EA;
-            --border-color: #D5D9DF;
-        }
-
-        [data-theme="sand"] {
-            /* حالت سوم: بوم کاغذی بژ */
-            --bg-canvas: #EFECE6;
-            --bg-surface: #F7F4EE;
-            --bg-subtle: #E5E0D5;
-            --border-color: #D8D2C5;
-        }
-
-        * {
-            box-sizing: border-box;
-            font-family: 'Vazirmatn', 'B Nazanin', Tahoma, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-canvas);
-            color: #1E2022;
-            margin: 0;
-            padding: 0;
-            -webkit-font-smoothing: antialiased;
-            transition: background-color 0.25s ease;
-        }
-
-        /* اسکرول‌بار ظریف و مات */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-canvas);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #C5C2B8;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #9E9B90;
-        }
-
-        .arch-card {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(28, 30, 33, 0.03);
-            transition: background-color 0.25s ease, border-color 0.25s ease;
-        }
-
-        .arch-input {
-            background-color: var(--bg-surface);
-            border: 1px solid var(--border-color);
-            color: #1E2022;
-            border-radius: 8px;
-            padding: 0.625rem 0.875rem;
-            font-size: 0.875rem;
-            transition: all 0.15s ease;
-            outline: none;
-        }
-        .arch-input:focus {
-            border-color: #2B3A42;
-            box-shadow: 0 0 0 3px rgba(43, 58, 66, 0.08);
-        }
-
-        .btn-primary {
-            background-color: #23272A;
-            color: #FAF9F6;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.15s ease;
-        }
-        .btn-primary:hover {
-            background-color: #343A40;
-        }
-
-        .btn-secondary {
-            background-color: var(--bg-subtle);
-            color: #23272A;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.15s ease;
-        }
-        .btn-secondary:hover {
-            background-color: var(--border-color);
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.65rem 0.9rem;
-            border-radius: 8px;
-            font-size: 0.875rem;
-            color: #525860;
-            font-weight: 500;
-            transition: all 0.15s ease;
-            cursor: pointer;
-            border: 1px solid transparent;
-        }
-        .nav-item:hover {
-            background-color: var(--bg-subtle);
-            color: #1E2022;
-        }
-        .nav-item.active {
-            background-color: #23272A;
-            color: #FAF9F6;
-        }
-
-        .ltr-num {
-            direction: ltr;
-            display: inline-block;
-            unicode-bidi: embed;
-        }
-
-        .arch-grid-bg {
-            background-size: 32px 32px;
-            background-image: 
-                linear-gradient(to right, rgba(30, 32, 34, 0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(30, 32, 34, 0.03) 1px, transparent 1px);
-        }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col selection:bg-stone-300 selection:text-stone-900">
-
-    <!-- نوار اعلان (Toast) -->
-    <div id="toastContainer" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
-
-    <!-- ==================== ۱. صفحه ورود (مینیمال، رسمی و آرامش‌بخش برای چشم) ==================== -->
-    <main id="loginScreen" class="min-h-screen w-full flex flex-col justify-between arch-grid-bg p-4 sm:p-8">
-        
-        <!-- نوار بالای صفحه ورود: انتخاب تناژ نوری چشم -->
-        <div class="w-full max-w-6xl mx-auto flex items-center justify-between">
-            <div class="flex items-center gap-2 text-xs text-ink-muted">
-                <span class="w-2 h-2 rounded-full bg-accent-sage"></span>
-                <span>پورتال داخلی مهندسان مشاور پارس پرنون</span>
-            </div>
-            <div class="flex items-center gap-1.5 arch-card px-2.5 py-1.5">
-                <span class="text-[11px] text-ink-muted ml-1">تناژ صفحه (راحتی چشم):</span>
-                <button onclick="setEyeTheme('default')" class="px-2 py-0.5 text-[11px] rounded bg-[#F2F0EA] border border-stone-300 text-stone-800 hover:border-stone-500">سنگ گرم</button>
-                <button onclick="setEyeTheme('silver')" class="px-2 py-0.5 text-[11px] rounded bg-[#EEF0F2] border border-slate-300 text-slate-800 hover:border-slate-500">نقره‌ای ملایم</button>
-                <button onclick="setEyeTheme('sand')" class="px-2 py-0.5 text-[11px] rounded bg-[#EFECE6] border border-amber-900/20 text-stone-800 hover:border-stone-500">کاغذی بژ</button>
-            </div>
-        </div>
-
-        <!-- کارت مرکزی ورود -->
-        <div class="my-auto w-full max-w-[440px] mx-auto">
-            <div class="arch-card p-8 sm:p-10">
-                
-                <!-- نماد رسمی مهندسان مشاور پارس پرنون -->
-                <div class="flex flex-col items-center text-center mb-8">
-                    <div class="w-28 h-28 bg-[#FAF9F6] border border-canvas-border rounded-xl p-2.5 flex items-center justify-center mb-4 shadow-sm">
-                        <img class="company-logo-img w-full h-full object-contain" alt="مهندسان مشاور پارس پرنون" src="">
-                    </div>
-                    <h1 class="text-xl font-bold text-ink tracking-tight">مهندسان مشاور پارس پرنون</h1>
-                    <p class="text-xs text-ink-muted mt-1.5">سامانه یکپارچه مدیریت پروژه‌ها و ثبت کارکرد پرسنل</p>
-                </div>
-
-                <!-- فرم ورود -->
-                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
-                    <div>
-                        <label class="block text-xs font-medium text-ink-muted mb-2">نام کاربری</label>
-                        <input type="text" id="loginUser" required autocomplete="username" dir="ltr"
-                            class="arch-input w-full text-left font-mono text-sm"
-                            placeholder="Username">
-                    </div>
-
-                    <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <label class="block text-xs font-medium text-ink-muted">رمز عبور</label>
-                            <button type="button" onclick="togglePassVisibility()" class="text-[11px] text-ink-faint hover:text-ink transition">
-                                نمایش / مخفی‌سازی رمز
-                            </button>
-                        </div>
-                        <input type="password" id="loginPass" required autocomplete="current-password" dir="ltr"
-                            class="arch-input w-full text-left font-mono text-sm"
-                            placeholder="••••••••">
-                    </div>
-
-                    <div id="loginError" class="hidden p-3 rounded-lg bg-red-50/80 border border-red-200 text-red-800 text-xs leading-relaxed">
-                        نام کاربری یا رمز عبور وارد شده صحیح نمی‌باشد.
-                    </div>
-
-                    <button type="submit" class="btn-primary w-full py-2.5 text-sm mt-2 flex items-center justify-center gap-2">
-                        <span>ورود به سامانه</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 19l-7-7 7-7"/></svg>
-                    </button>
-                </form>
-
-                <!-- بخش‌های فعال سازمان -->
-                <div class="mt-8 pt-6 border-t border-canvas-border">
-                    <div class="text-[11px] text-ink-faint text-center mb-3">واحدهای سازمانی فعال در سامانه</div>
-                    <div id="loginDeptsList" class="flex flex-wrap items-center justify-center gap-1.5"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- پاورقی صفحه ورود -->
-        <div class="w-full max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between text-[11px] text-ink-faint gap-2">
-            <span>مهندسان مشاور پارس پرنون — کلیه حقوق محفوظ است</span>
-            <span>طراحی و توسعه سیستم: مهدی موسوی</span>
-        </div>
-    </main>
-
-    <!-- ==================== ۲. محیط اصلی سامانه (پس از ورود) ==================== -->
-    <div id="appShell" class="hidden min-h-screen flex flex-col lg:flex-row">
-
-        <!-- نوار کناری سمت راست (Sidebar) -->
-        <aside class="w-full lg:w-64 arch-card rounded-none border-t-0 border-r-0 border-b lg:border-b-0 lg:border-l border-canvas-border flex flex-col justify-between shrink-0">
-            <div>
-                <!-- برندینگ بالای سایدبار -->
-                <div class="p-5 border-b border-canvas-border flex items-center gap-3.5">
-                    <div class="w-12 h-12 rounded-lg bg-[#FAF9F6] border border-canvas-border p-1.5 shrink-0 flex items-center justify-center">
-                        <img class="company-logo-img w-full h-full object-contain" alt="پارس پرنون" src="">
-                    </div>
-                    <div class="min-w-0">
-                        <h2 class="text-sm font-bold text-ink truncate">پارس پرنون</h2>
-                        <p class="text-[11px] text-ink-muted truncate">مهندسان مشاور</p>
-                    </div>
-                </div>
-
-                <!-- منوی ناوبری مدیر (Admin Navigation) -->
-                <nav id="adminNav" class="hidden p-3 space-y-1">
-                    <div class="px-3 py-1.5 text-[11px] font-semibold text-ink-faint">منوی مدیریت ارشد</div>
-                    <div onclick="switchAdminTab('dashboard')" id="nav-dashboard" class="nav-item active">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                        <span>داشبورد و گزارش تحلیلی</span>
-                    </div>
-                    <div onclick="switchAdminTab('depts')" id="nav-depts" class="nav-item">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                        <span>بخش‌ها و پروژه‌ها</span>
-                    </div>
-                    <div onclick="switchAdminTab('users')" id="nav-users" class="nav-item">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                        <span>پرسنل و رمزهای ورود</span>
-                    </div>
-                    <div onclick="switchAdminTab('logs')" id="nav-logs" class="nav-item">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                        <span>لوح کارکرد کل شرکت</span>
-                    </div>
-                    <div onclick="switchAdminTab('settings')" id="nav-settings" class="nav-item">
-                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span>تنظیمات، لوگو و گیت‌هاب</span>
-                    </div>
-                </nav>
-
-                <!-- اطلاعات پنل کارمند در سایدبار -->
-                <div id="empSidebarInfo" class="hidden p-4 space-y-3">
-                    <div class="p-3.5 rounded-lg bg-canvas-subtle border border-canvas-border">
-                        <div class="text-[11px] text-ink-muted">واحد سازمانی شما:</div>
-                        <div id="empSideDept" class="text-sm font-bold text-ink mt-0.5">-</div>
-                        <div class="text-[11px] text-ink-muted mt-2">سمت شغلی:</div>
-                        <div id="empSideRole" class="text-xs font-medium text-ink mt-0.5">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- مشخصات کاربر واردشده و خروج -->
-            <div class="p-4 border-t border-canvas-border bg-canvas-subtle/50">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="min-w-0">
-                        <div id="sidebarUserName" class="text-xs font-bold text-ink truncate">-</div>
-                        <div id="sidebarUserRole" class="text-[11px] text-ink-muted truncate">-</div>
-                    </div>
-                    <span class="px-2 py-0.5 text-[10px] rounded bg-stone-200/80 text-stone-700 font-mono" id="sidebarUserBadge">USER</span>
-                </div>
-                <button onclick="logout()" class="w-full py-2 px-3 rounded-lg border border-canvas-border bg-canvas-surface hover:bg-red-50/60 hover:border-red-200 hover:text-red-800 text-xs font-medium text-ink-muted transition flex items-center justify-center gap-2">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    <span>خروج از حساب</span>
-                </button>
-            </div>
-        </aside>
-
-        <!-- بخش اصلی محتوا -->
-        <div class="flex-1 flex flex-col min-w-0">
-
-            <!-- هدر بالای صفحه کاری -->
-            <header class="arch-card rounded-none border-t-0 border-l-0 border-r-0 border-b border-canvas-border px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 id="pageHeaderTitle" class="text-base font-bold text-ink">داشبورد مدیریتی</h1>
-                    <p class="text-xs text-ink-muted mt-0.5">تاریخ امروز: <span id="headerTodayDate" class="ltr-num font-medium text-ink"></span></p>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-2.5">
-                    <!-- انتخابگر تناژ رنگ صفحه برای راحتی چشم -->
-                    <div class="flex items-center gap-1 bg-canvas-subtle px-2.5 py-1.5 rounded-lg border border-canvas-border">
-                        <span class="text-[11px] text-ink-muted ml-1">رنگ محیط:</span>
-                        <button onclick="setEyeTheme('default')" class="px-2 py-0.5 text-[11px] rounded bg-[#F2F0EA] border border-stone-300 text-stone-800">گرم</button>
-                        <button onclick="setEyeTheme('silver')" class="px-2 py-0.5 text-[11px] rounded bg-[#EEF0F2] border border-slate-300 text-slate-800">نقره‌ای</button>
-                        <button onclick="setEyeTheme('sand')" class="px-2 py-0.5 text-[11px] rounded bg-[#EFECE6] border border-amber-900/20 text-stone-800">بژ</button>
-                    </div>
-
-                    <!-- دکمه‌های سریع مدیر -->
-                    <div id="adminQuickActions" class="hidden flex items-center gap-2">
-                        <button onclick="downloadUpdatedSiteFile()" class="btn-primary px-3.5 py-1.5 text-xs flex items-center gap-1.5" title="دانلود فایل index.html حاوی تمام کارمندان، پروژه‌ها و لوگوی جدید برای قرار دادن در گیت‌هاب">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            <span>دریافت فایل آپدیت‌شده گیت‌هاب</span>
-                        </button>
-                        <button onclick="exportCSV()" class="btn-secondary px-3 py-1.5 text-xs flex items-center gap-1.5">
-                            <span>خروجی اکسل (CSV)</span>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <!-- محتوای اسکرول‌شونده -->
-            <div class="p-6 max-w-7xl w-full mx-auto space-y-6 flex-1">
-
-                <!-- ==================== الف) پنل مدیریت ارشد ==================== -->
-                <div id="adminWorkspace" class="hidden space-y-6">
-
-                    <!-- تب ۱: داشبورد و گزارش تحلیلی -->
-                    <section id="tab-dashboard" class="space-y-6">
-                        
-                        <!-- نوار فیلتر -->
-                        <div class="arch-card p-4 flex flex-wrap items-end gap-3">
-                            <div class="flex-1 min-w-[160px]">
-                                <label class="block text-[11px] text-ink-muted mb-1">فیلتر واحد سازمانی (بخش)</label>
-                                <select id="fltDept" onchange="refreshDashboard()" class="arch-input w-full py-1.5 text-xs"></select>
-                            </div>
-                            <div class="flex-1 min-w-[180px]">
-                                <label class="block text-[11px] text-ink-muted mb-1">فیلتر پروژه</label>
-                                <select id="fltProject" onchange="refreshDashboard()" class="arch-input w-full py-1.5 text-xs"></select>
-                            </div>
-                            <div class="flex-1 min-w-[160px]">
-                                <label class="block text-[11px] text-ink-muted mb-1">فیلتر کارشناس</label>
-                                <select id="fltUser" onchange="refreshDashboard()" class="arch-input w-full py-1.5 text-xs"></select>
-                            </div>
-                            <button onclick="resetFilters()" class="btn-secondary px-3.5 py-2 text-xs">
-                                نمایش همه
-                            </button>
-                        </div>
-
-                        <!-- کارت‌های شاخص کلیدی (KPI) -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="arch-card p-5">
-                                <div class="text-xs text-ink-muted">مجموع ساعات کارکرد ثبت‌شده</div>
-                                <div class="mt-2 flex items-baseline gap-1.5">
-                                    <span id="kpiHours" class="text-2xl font-bold text-ink">0</span>
-                                    <span class="text-xs text-ink-faint">ساعت</span>
-                                </div>
-                                <div class="mt-2 text-[11px] text-ink-faint">محاسبه بر مبنای واحدهای نیم‌ساعته</div>
-                            </div>
-
-                            <div class="arch-card p-5">
-                                <div class="text-xs text-ink-muted">پروژه‌های فعال در جریان</div>
-                                <div class="mt-2 flex items-baseline gap-1.5">
-                                    <span id="kpiProjects" class="text-2xl font-bold text-ink">0</span>
-                                    <span class="text-xs text-ink-faint">پروژه</span>
-                                </div>
-                                <div id="kpiDeptsNote" class="mt-2 text-[11px] text-ink-faint">در ۳ بخش تخصصی</div>
-                            </div>
-
-                            <div class="arch-card p-5">
-                                <div class="text-xs text-ink-muted">کارشناسان و پرسنل</div>
-                                <div class="mt-2 flex items-baseline gap-1.5">
-                                    <span id="kpiStaff" class="text-2xl font-bold text-ink">0</span>
-                                    <span class="text-xs text-ink-faint">نفر</span>
-                                </div>
-                                <div class="mt-2 text-[11px] text-ink-faint">دارای نام کاربری اختصاصی</div>
-                            </div>
-
-                            <div class="arch-card p-5">
-                                <div class="text-xs text-ink-muted">تعداد گزارش‌های ثبت‌شده</div>
-                                <div class="mt-2 flex items-baseline gap-1.5">
-                                    <span id="kpiLogs" class="text-2xl font-bold text-ink">0</span>
-                                    <span class="text-xs text-ink-faint">رکورد</span>
-                                </div>
-                                <div class="mt-2 text-[11px] text-ink-faint">فرمت تاریخ روز / ماه / سال</div>
-                            </div>
-                        </div>
-
-                        <!-- نمودارهای تحلیلی با رنگ‌های مات و مهندسی -->
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                            <div class="arch-card p-5">
-                                <h3 class="text-xs font-bold text-ink mb-4">تفکیک کارکرد به ازای بخش‌های شرکت (ساعت)</h3>
-                                <div class="h-60 relative">
-                                    <canvas id="chartByDept"></canvas>
-                                </div>
-                            </div>
-                            <div class="arch-card p-5">
-                                <h3 class="text-xs font-bold text-ink mb-4">ساعات صرف‌شده در هر پروژه</h3>
-                                <div class="h-60 relative">
-                                    <canvas id="chartByProject"></canvas>
-                                </div>
-                            </div>
-                            <div class="arch-card p-5">
-                                <h3 class="text-xs font-bold text-ink mb-4">مقایسه کارکرد پرسنل (ساعت)</h3>
-                                <div class="h-60 relative">
-                                    <canvas id="chartByStaff"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- خلاصه وضعیت بخش‌های شرکت -->
-                        <div class="arch-card p-5">
-                            <div class="flex items-center justify-between mb-4">
-                                <h3 class="text-sm font-bold text-ink">خلاصه عملکرد واحدهای سازمانی (بخش معماری، امور پیمان و رسیدگی، مالی و...)</h3>
-                                <button onclick="switchAdminTab('depts')" class="text-xs text-ink-muted hover:text-ink underline">مدیریت یا افزودن بخش جدید</button>
-                            </div>
-                            <div id="deptSummaryCards" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
-                        </div>
-                    </section>
-
-                    <!-- تب ۲: مدیریت بخش‌ها، پروژه‌ها و شرح خدمات -->
-                    <section id="tab-depts" class="hidden space-y-6">
-                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                            
-                            <!-- ستون مدیریت بخش‌های شرکت -->
-                            <div class="lg:col-span-5 arch-card p-5 space-y-4">
-                                <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">واحدهای سازمانی (بخش‌های شرکت)</h3>
-                                <form onsubmit="addDepartment(event)" class="space-y-3 bg-canvas-subtle/60 p-3.5 rounded-lg border border-canvas-border">
-                                    <div class="text-xs font-semibold text-ink">افزودن بخش جدید به شرکت</div>
-                                    <div>
-                                        <label class="block text-[11px] text-ink-muted mb-1">نام بخش جدید</label>
-                                        <input type="text" id="newDeptName" required placeholder="مثال: بخش سازه و ژئوتکنیک" class="arch-input w-full text-xs">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[11px] text-ink-muted mb-1">توضیح یا حوزه فعالیت</label>
-                                        <input type="text" id="newDeptDesc" placeholder="مثال: محاسبات فنی و نقشه‌های اجرایی" class="arch-input w-full text-xs">
-                                    </div>
-                                    <button type="submit" class="btn-primary w-full py-2 text-xs">ثبت بخش جدید</button>
-                                </form>
-                                <div id="deptsManageList" class="space-y-2 max-h-80 overflow-y-auto"></div>
-                            </div>
-
-                            <!-- ستون مدیریت پروژه‌ها -->
-                            <div class="lg:col-span-7 arch-card p-5 space-y-4">
-                                <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">تعریف و مدیریت پروژه‌های شرکت</h3>
-                                <form onsubmit="addProject(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-canvas-subtle/60 p-3.5 rounded-lg border border-canvas-border">
-                                    <div>
-                                        <label class="block text-[11px] text-ink-muted mb-1">کد پروژه</label>
-                                        <input type="text" id="newProjCode" required dir="ltr" placeholder="PP-106" class="arch-input w-full text-xs text-left font-mono">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[11px] text-ink-muted mb-1">نام پروژه</label>
-                                        <input type="text" id="newProjName" required placeholder="مثال: مجتمع اداری پارس" class="arch-input w-full text-xs">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[11px] text-ink-muted mb-1">بخش مربوطه</label>
-                                        <select id="newProjDept" class="arch-input w-full text-xs"></select>
-                                    </div>
-                                    <div class="sm:col-span-3">
-                                        <button type="submit" class="btn-primary w-full py-2 text-xs">افزودن به فهرست پروژه‌ها</button>
-                                    </div>
-                                </form>
-
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-right text-xs border-collapse">
-                                        <thead>
-                                            <tr class="border-b border-canvas-border text-ink-muted bg-canvas-subtle/50">
-                                                <th class="py-2.5 px-3">کد پروژه</th>
-                                                <th class="py-2.5 px-3">عنوان پروژه</th>
-                                                <th class="py-2.5 px-3">بخش</th>
-                                                <th class="py-2.5 px-3 text-center">ساعات ثبت‌شده</th>
-                                                <th class="py-2.5 px-3 text-left">عملیات</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="projectsManageTable" class="divide-y divide-canvas-border"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- مدیریت دسته‌بندی خدمات تخصصی -->
-                        <div class="arch-card p-5 space-y-4">
-                            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-canvas-border pb-3">
-                                <div>
-                                    <h3 class="text-sm font-bold text-ink">عناوین خدمات و فعالیت‌های تخصصی (معماری، امور پیمان ۵۰۹۰، مالی و...)</h3>
-                                    <p class="text-[11px] text-ink-muted">کارمندان هنگام ثبت کارکرد روزانه، نوع فعالیت خود را از این لیست انتخاب می‌کنند.</p>
-                                </div>
-                                <form onsubmit="addTaskCategory(event)" class="flex items-center gap-2">
-                                    <input type="text" id="newCatInput" required placeholder="عنوان فعالیت جدید..." class="arch-input text-xs py-1.5 w-56">
-                                    <button type="submit" class="btn-primary px-4 py-1.5 text-xs">افزودن خدمت</button>
-                                </form>
-                            </div>
-                            <div id="categoriesList" class="flex flex-wrap gap-2"></div>
-                        </div>
-                    </section>
-
-                    <!-- تب ۳: مدیریت پرسنل و رمزهای عبور -->
-                    <section id="tab-users" class="hidden space-y-6">
-                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                            
-                            <!-- فرم تعریف کارمند جدید -->
-                            <div class="lg:col-span-4 arch-card p-5 space-y-4">
-                                <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">تعریف کارمند جدید و اختصاص رمز</h3>
-                                <form onsubmit="addEmployee(event)" class="space-y-3.5">
-                                    <div>
-                                        <label class="block text-xs text-ink-muted mb-1">نام و نام خانوادگی کارمند</label>
-                                        <input type="text" id="empFullName" required placeholder="مثال: مهندس رضا محمدی" class="arch-input w-full text-xs">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-ink-muted mb-1">واحد سازمانی (بخش)</label>
-                                        <select id="empDeptSelect" required class="arch-input w-full text-xs"></select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-ink-muted mb-1">سمت شغلی</label>
-                                        <input type="text" id="empRoleTitle" required placeholder="مثال: کارشناس امور پیمان و رسیدگی" class="arch-input w-full text-xs">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-ink-muted mb-1">نام کاربری ورود (انگلیسی)</label>
-                                        <input type="text" id="empUsername" required dir="ltr" placeholder="mohammadi" class="arch-input w-full text-xs text-left font-mono">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-ink-muted mb-1">رمز عبور ورود</label>
-                                        <input type="text" id="empPassword" required dir="ltr" placeholder="123456" class="arch-input w-full text-xs text-left font-mono">
-                                    </div>
-                                    <button type="submit" class="btn-primary w-full py-2.5 text-xs">ایجاد حساب کاربری کارمند</button>
-                                </form>
-                            </div>
-
-                            <!-- جدول لیست پرسنل -->
-                            <div class="lg:col-span-8 arch-card p-5 space-y-4">
-                                <div class="flex items-center justify-between border-b border-canvas-border pb-3">
-                                    <div>
-                                        <h3 class="text-sm font-bold text-ink">فهرست پرسنل و اطلاعات ورود به سامانه</h3>
-                                        <p class="text-[11px] text-ink-muted mt-0.5">مدیر می‌تواند رمز عبور یا بخش هر یک از کارکنان را ویرایش کند.</p>
-                                    </div>
-                                </div>
-
-                                <div class="overflow-x-auto">
-                                    <table class="w-full text-right text-xs border-collapse">
-                                        <thead>
-                                            <tr class="border-b border-canvas-border text-ink-muted bg-canvas-subtle/50">
-                                                <th class="py-2.5 px-3">نام و نام خانوادگی</th>
-                                                <th class="py-2.5 px-3">بخش تخصصی</th>
-                                                <th class="py-2.5 px-3">سمت</th>
-                                                <th class="py-2.5 px-3">نام کاربری</th>
-                                                <th class="py-2.5 px-3">رمز عبور</th>
-                                                <th class="py-2.5 px-3 text-center">مجموع کارکرد</th>
-                                                <th class="py-2.5 px-3 text-left">عملیات</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="employeesTableBody" class="divide-y divide-canvas-border"></tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- تب ۴: لوح جامع کارکرد کل شرکت -->
-                    <section id="tab-logs" class="hidden space-y-6">
-                        
-                        <!-- ثبت کارکرد توسط مدیر -->
-                        <div class="arch-card p-5">
-                            <h3 class="text-sm font-bold text-ink mb-3">ثبت کارکرد جدید توسط مدیر</h3>
-                            <form onsubmit="adminAddWorklog(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
-                                <div>
-                                    <label class="block text-[11px] text-ink-muted mb-1">کارشناس</label>
-                                    <select id="admLogUser" required class="arch-input w-full text-xs"></select>
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] text-ink-muted mb-1">پروژه</label>
-                                    <select id="admLogProject" required class="arch-input w-full text-xs"></select>
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] text-ink-muted mb-1">نوع فعالیت تخصصی</label>
-                                    <select id="admLogCategory" required class="arch-input w-full text-xs"></select>
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] text-ink-muted mb-1">تاریخ (روز / ماه / سال)</label>
-                                    <input type="text" id="admLogDate" required dir="ltr" class="arch-input w-full text-xs text-center font-mono">
-                                </div>
-                                <div>
-                                    <label class="block text-[11px] text-ink-muted mb-1">مدت (نیم‌ساعته)</label>
-                                    <select id="admLogHours" required class="arch-input w-full text-xs hour-select"></select>
-                                </div>
-                                <div>
-                                    <button type="submit" class="btn-primary w-full py-2 text-xs">ثبت در کارکرد</button>
-                                </div>
-                                <div class="sm:col-span-2 lg:col-span-6">
-                                    <input type="text" id="admLogDesc" placeholder="شرح اقدامات انجام‌شده (مثال: بررسی صورت‌وضعیت شماره ۳ طبق بخشنامه ۵۰۹۰ / ترسیم پلان معماری...)" class="arch-input w-full text-xs">
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- جدول کل کارکردها -->
-                        <div class="arch-card p-5 space-y-4">
-                            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-canvas-border pb-3">
-                                <h3 class="text-sm font-bold text-ink">جدول جامع کارکردهای ثبت‌شده پرسنل</h3>
-                                <input type="text" id="searchLogsInput" oninput="renderAdminLogsTable()" placeholder="جستجو در نام کارمند، پروژه، تاریخ یا توضیحات..." class="arch-input text-xs py-1.5 w-64">
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-right text-xs border-collapse">
-                                    <thead>
-                                        <tr class="border-b border-canvas-border text-ink-muted bg-canvas-subtle/50">
-                                            <th class="py-2.5 px-3">تاریخ (روز/ماه/سال)</th>
-                                            <th class="py-2.5 px-3">نام کارشناس</th>
-                                            <th class="py-2.5 px-3">بخش</th>
-                                            <th class="py-2.5 px-3">پروژه</th>
-                                            <th class="py-2.5 px-3">نوع فعالیت</th>
-                                            <th class="py-2.5 px-3 text-center">مدت (ساعت)</th>
-                                            <th class="py-2.5 px-3">شرح کارکرد</th>
-                                            <th class="py-2.5 px-3 text-left">حذف</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="adminLogsTableBody" class="divide-y divide-canvas-border"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- تب ۵: تنظیمات، آپلود نماد شرکت و خروجی گیت‌هاب -->
-                    <section id="tab-settings" class="hidden space-y-6">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            
-                            <!-- تنظیمات نماد شرکت و رمز مدیر -->
-                            <div class="arch-card p-6 space-y-5">
-                                <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">نماد شرکت و مشخصات مدیر ارشد</h3>
-                                
-                                <div class="flex items-center gap-4 p-4 rounded-lg bg-canvas-subtle/60 border border-canvas-border">
-                                    <div class="w-20 h-20 rounded-lg bg-[#FAF9F6] border border-canvas-border p-2 flex items-center justify-center shrink-0">
-                                        <img class="company-logo-img w-full h-full object-contain" alt="نماد پارس پرنون" src="">
-                                    </div>
-                                    <div class="space-y-2">
-                                        <div class="text-xs font-bold text-ink">تصویر رسمی نماد «مهندسان مشاور پارس پرنون»</div>
-                                        <p class="text-[11px] text-ink-muted leading-relaxed">نماد پیش‌فرض دقیقاً مطابق لوگوی شرکت طراحی شده است. در صورت تمایل می‌توانید فایل عکس (`JPG/PNG`) را نیز بارگذاری کنید:</p>
-                                        <div class="flex flex-wrap gap-2">
-                                            <label class="btn-primary px-3 py-1.5 text-xs cursor-pointer inline-block">
-                                                <span>انتخاب فایل لوگو از کامپیوتر</span>
-                                                <input type="file" accept="image/*" class="hidden" onchange="uploadCustomLogo(event)">
-                                            </label>
-                                            <button onclick="resetToDefaultLogo()" class="btn-secondary px-3 py-1.5 text-xs">بازگردانی نماد اصلی</button>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <form onsubmit="updateAdminCredentials(event)" class="space-y-3 pt-2">
-                                    <div class="text-xs font-bold text-ink">مشخصات ورود مدیر کل سامانه</div>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                        <div>
-                                            <label class="block text-[11px] text-ink-muted mb-1">نام کاربری مدیر</label>
-                                            <input type="text" id="setAdminUser" required dir="ltr" class="arch-input w-full text-xs text-left font-mono">
-                                        </div>
-                                        <div>
-                                            <label class="block text-[11px] text-ink-muted mb-1">رمز عبور مدیر</label>
-                                            <input type="text" id="setAdminPass" required dir="ltr" class="arch-input w-full text-xs text-left font-mono">
-                                        </div>
-                                    </div>
-                                    <button type="submit" class="btn-secondary px-4 py-2 text-xs">ذخیره نام کاربری و رمز مدیر</button>
-                                </form>
-                            </div>
-
-                            <!-- راهنمای بروزرسانی در گیت‌هاب و دیتابیس ابری -->
-                            <div class="arch-card p-6 space-y-5">
-                                <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">انتشار در گیت‌هاب و همگام‌سازی ابری</h3>
-                                
-                                <div class="p-4 rounded-lg bg-canvas-subtle/60 border border-canvas-border space-y-3">
-                                    <div class="text-xs font-bold text-ink">بروزرسانی دائمی فایل گیت‌هاب (`index.html`)</div>
-                                    <p class="text-[11px] text-ink-muted leading-relaxed">
-                                        هر زمان کارمند، رمز عبور، بخش یا پروژه جدیدی اضافه کردید، با کلیک روی دکمه زیر فایل `index.html` جدیدی دانلود می‌شود که تمام تغییرات شما در دل کدهای آن ذخیره شده است. کافی است آن را در گیت‌هاب جایگزین کنید.
-                                    </p>
-                                    <button onclick="downloadUpdatedSiteFile()" class="btn-primary w-full py-2.5 text-xs">
-                                        دانلود فایل کامل index.html جهت قرار دادن در گیت‌هاب
-                                    </button>
-                                </div>
-
-                                <div class="space-y-2 pt-2">
-                                    <label class="block text-xs font-bold text-ink">آدرس دیتابیس ابری رایگان (Firebase Realtime DB - اختیاری)</label>
-                                    <p class="text-[11px] text-ink-muted">برای ثبت همزمان کارکرد پرسنل از سیستم‌های مختلف بدون نیاز به آپدیت دستی، لینک دیتابیس رایگان Firebase خود را وارد نمایید:</p>
-                                    <div class="flex gap-2">
-                                        <input type="url" id="firebaseEndpointInput" dir="ltr" placeholder="https://your-project-default-rtdb.firebaseio.com" class="arch-input flex-1 text-xs text-left font-mono">
-                                        <button onclick="saveFirebaseEndpoint()" class="btn-primary px-4 py-2 text-xs">اتصال</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- ==================== ب) پنل اختصاصی کارمندان ==================== -->
-                <div id="employeeWorkspace" class="hidden space-y-6">
-                    
-                    <!-- خلاصه وضعیت کارمند -->
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="arch-card p-5">
-                            <div class="text-xs text-ink-muted">مجموع ساعات کارکرد ثبت‌شده شما</div>
-                            <div class="mt-2 flex items-baseline gap-1.5">
-                                <span id="empTotalHours" class="text-2xl font-bold text-ink">0</span>
-                                <span class="text-xs text-ink-faint">ساعت</span>
-                            </div>
-                        </div>
-                        <div class="arch-card p-5">
-                            <div class="text-xs text-ink-muted">تعداد گزارش‌های روزانه شما</div>
-                            <div class="mt-2 flex items-baseline gap-1.5">
-                                <span id="empTotalLogs" class="text-2xl font-bold text-ink">0</span>
-                                <span class="text-xs text-ink-faint">مورد</span>
-                            </div>
-                        </div>
-                        <div class="arch-card p-5">
-                            <div class="text-xs text-ink-muted">پروژه‌های مرتبط با فعالیت شما</div>
-                            <div class="mt-2 flex items-baseline gap-1.5">
-                                <span id="empProjectsCount" class="text-2xl font-bold text-ink">0</span>
-                                <span class="text-xs text-ink-faint">پروژه</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                        <!-- فرم ثبت کارکرد روزانه کارمند -->
-                        <div class="lg:col-span-5 arch-card p-6 space-y-4">
-                            <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">ثبت گزارش کارکرد روزانه</h3>
-                            <form onsubmit="employeeAddWorklog(event)" class="space-y-4">
-                                <div>
-                                    <label class="block text-xs text-ink-muted mb-1.5">انتخاب پروژه</label>
-                                    <select id="empFormProject" required class="arch-input w-full text-xs"></select>
-                                </div>
-
-                                <div>
-                                    <label class="block text-xs text-ink-muted mb-1.5">نوع فعالیت / خدمت تخصصی</label>
-                                    <select id="empFormCategory" required class="arch-input w-full text-xs"></select>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block text-xs text-ink-muted mb-1.5">تاریخ (روز / ماه / سال)</label>
-                                        <input type="text" id="empFormDate" required dir="ltr" class="arch-input w-full text-xs text-center font-mono">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs text-ink-muted mb-1.5">مدت زمان (نیم‌ساعته)</label>
-                                        <select id="empFormHours" required class="arch-input w-full text-xs hour-select"></select>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-xs text-ink-muted mb-1.5">شرح اقدامات انجام‌شده</label>
-                                    <textarea id="empFormDesc" rows="3" required placeholder="توضیح مختصر فعالیت انجام‌شده در پروژه..." class="arch-input w-full text-xs"></textarea>
-                                </div>
-
-                                <button type="submit" class="btn-primary w-full py-2.5 text-xs">
-                                    ثبت نهایی در کارنامه کارکرد
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- جدول سوابق کارکرد کارمند -->
-                        <div class="lg:col-span-7 arch-card p-6 space-y-4">
-                            <div class="flex items-center justify-between border-b border-canvas-border pb-3">
-                                <h3 class="text-sm font-bold text-ink">سوابق کارکردهای ثبت‌شده شما</h3>
-                                <span class="text-[11px] text-ink-faint">مرتب‌شده بر اساس آخرین ثبت</span>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-right text-xs border-collapse">
-                                    <thead>
-                                        <tr class="border-b border-canvas-border text-ink-muted bg-canvas-subtle/50">
-                                            <th class="py-2.5 px-3">تاریخ (روز/ماه/سال)</th>
-                                            <th class="py-2.5 px-3">پروژه</th>
-                                            <th class="py-2.5 px-3">فعالیت</th>
-                                            <th class="py-2.5 px-3 text-center">ساعت</th>
-                                            <th class="py-2.5 px-3">توضیحات</th>
-                                            <th class="py-2.5 px-3 text-left">حذف</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="empLogsTableBody" class="divide-y divide-canvas-border"></tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- ==================== منطق و دیتابیس سامانه ==================== -->
-    <script>
-        // ۱. نماد وکتور دقیق «مهندسان مشاور پارس پرنون» مطابق تصویر ارسالی (کادر دولایه معماری + خوشنویسی پارس پرنون)
-        const PARS_PARNOUN_OFFICIAL_LOGO = "data:image/svg+xml;utf8," + encodeURIComponent(`
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260" width="100%" height="100%">
-            <rect width="260" height="260" fill="#FAF9F6"/>
-            <!-- کادر دولایه بالا و راست -->
-            <path d="M 188 18 L 240 18 L 240 112" fill="none" stroke="#141414" stroke-width="6.5" stroke-linecap="square"/>
-            <path d="M 188 27 L 231 27 L 231 112" fill="none" stroke="#141414" stroke-width="2" stroke-linecap="square"/>
-            
-            <!-- کادر دولایه چپ و پایین-چپ -->
-            <path d="M 24 106 L 24 205 L 62 205" fill="none" stroke="#141414" stroke-width="6.5" stroke-linecap="square"/>
-            <path d="M 33 106 L 33 196 L 62 196" fill="none" stroke="#141414" stroke-width="2" stroke-linecap="square"/>
-
-            <!-- کادر دولایه پایین-راست -->
-            <path d="M 240 128 L 240 205 L 185 205" fill="none" stroke="#141414" stroke-width="6.5" stroke-linecap="square"/>
-            <path d="M 231 128 L 231 196 L 185 196" fill="none" stroke="#141414" stroke-width="2" stroke-linecap="square"/>
-
-            <!-- قوس بزرگ حرف ن (بالا چپ تا راست) -->
-            <path d="M 46 84 C 75 112, 165 92, 198 22 C 175 72, 92 94, 54 74 Z" fill="#141414"/>
-            <!-- نقطه لوزی داخل ن -->
-            <polygon points="131,33 141,42 131,51 121,42" fill="#141414"/>
-
-            <!-- کشیده مورب «س / پر» و قوس پایین -->
-            <path d="M 218 82 C 194 82, 182 108, 174 134 C 152 178, 114 202, 74 204 C 118 208, 164 188, 186 142 C 193 118, 202 95, 218 92 Z" fill="#141414"/>
-            
-            <!-- حروف «پـا» در سمت راست پایین -->
-            <path d="M 208 112 C 204 138, 204 155, 214 158 C 221 159, 224 148, 221 142 C 216 146, 212 142, 214 112 Z" fill="#141414"/>
-            <!-- سه نقطه پ (راست پایین) -->
-            <polygon points="205,168 211,174 205,180 199,174" fill="#141414"/>
-            <polygon points="217,168 223,174 217,180 211,174" fill="#141414"/>
-            <polygon points="211,178 217,184 211,190 205,184" fill="#141414"/>
-
-            <!-- بخش میانی «پرنو» -->
-            <path d="M 142 96 C 142 112, 128 118, 118 112 C 114 108, 120 98, 128 100 C 134 102, 134 114, 116 126 C 136 124, 148 112, 148 96 Z" fill="#141414"/>
-            <path d="M 162 114 C 154 128, 144 136, 132 140 C 146 142, 158 134, 166 118 Z" fill="#141414"/>
-            <!-- سه نقطه پ (میانی) -->
-            <polygon points="129,149 134,154 129,159 124,154" fill="#141414"/>
-            <polygon points="140,149 145,154 140,159 135,154" fill="#141414"/>
-            <polygon points="134,158 139,163 134,168 129,163" fill="#141414"/>
-
-            <!-- نوشتار «مهندسان مشاور» در پایین -->
-            <text x="130" y="242" text-anchor="middle" fill="#141414" font-family="'B Nazanin', 'Vazirmatn', Tahoma, serif" font-size="31" font-weight="bold" letter-spacing="0.5">مهندسان مشاور</text>
-        </svg>`);
-
-        // ۲. داده‌های پیش‌فرض سامانه (شامل هر ۳ بخش درخواستی + پرسنل فایل اکسل)
-        const INITIAL_DATABASE = {
-            companyName: "مهندسان مشاور پارس پرنون",
-            logoDataUrl: PARS_PARNOUN_OFFICIAL_LOGO,
-            eyeTheme: "default",
-            firebaseUrl: "",
-            admin: {
-                username: "parsparnoun",
-                password: "parsparnoun123",
-                name: "مدیریت ارشد پارس پرنون"
-            },
-            departments: [
-                { id: "dept_arch", name: "بخش معماری", desc: "طراحی فاز ۱ و ۲، نقشه‌های اجرایی، نما و دکوراسیون داخلی" },
-                { id: "dept_contract", name: "بخش امور پیمان و رسیدگی", desc: "متره و برآورد، صورت‌وضعیت‌ها، تعدیل و لایحه تاخیرات (بخشنامه ۵۰۹۰)" },
-                { id: "dept_fin", name: "بخش مالی", desc: "حسابداری پروژه‌ها، اسناد مالی، تنخواه و صورت‌های مالی" }
-            ],
-            projects: [
-                { code: "PP-101", name: "مجتمع اداری و تجاری پارس", deptId: "dept_arch" },
-                { code: "PP-102", name: "طرح توسعه و محوطه‌سازی مجموعه پرنون", deptId: "dept_arch" },
-                { code: "PP-201", name: "رسیدگی پیمان و لایحه تاخیرات پروژه نگین (بخشنامه ۵۰۹۰)", deptId: "dept_contract" },
-                { code: "PP-202", name: "متره و صورت‌وضعیت قطعی مجتمع مسکونی سپهر", deptId: "dept_contract" },
-                { code: "PP-301", name: "حسابرسی، تراز مالی و بودجه‌بندی سالانه شرکت", deptId: "dept_fin" }
-            ],
-            categories: [
-                "طراحی معماری (فاز ۱ و ۲)",
-                "مدل‌سازی سه‌بعدی و رندرینگ",
-                "رسیدگی به صورت‌وضعیت و تعدیل",
-                "محاسبات تاخیرات و بخشنامه ۵۰۹۰",
-                "تنظیم قراردادها و امور پیمان",
-                "ثبت اسناد حسابداری و مالی",
-                "کنترل پروژه و گزارش‌دهی مدیریت"
-            ],
-            employees: [
-                { id: "emp_1", name: "فاطمه صالحی", deptId: "dept_arch", role: "کارشناس ارشد معماری", username: "salehi", password: "1234" },
-                { id: "emp_2", name: "نفیسه سلوک", deptId: "dept_arch", role: "کارشناس طراحی و معماری", username: "solouk", password: "1234" },
-                { id: "emp_3", name: "علیرضا نجاری", deptId: "dept_contract", role: "کارشناس ارشد امور پیمان و رسیدگی", username: "najari", password: "1234" },
-                { id: "emp_4", name: "مهدیار مخلص‌پور", deptId: "dept_contract", role: "کارشناس متره و رسیدگی پیمان", username: "mokhlespour", password: "1234" },
-                { id: "emp_5", name: "سعید منتظری", deptId: "dept_fin", role: "کارشناس ارشد بخش مالی", username: "montazeri", password: "1234" }
-            ],
-            worklogs: [
-                { id: "log_101", empId: "emp_1", projectCode: "PP-101", category: "طراحی معماری (فاز ۱ و ۲)", date: "20 / 07 / 1405", hours: 4.5, desc: "تکمیل پلان‌های اجرایی طبقات و دیتیل‌های معماری" },
-                { id: "log_102", empId: "emp_2", projectCode: "PP-102", category: "مدل‌سازی سه‌بعدی و رندرینگ", date: "21 / 07 / 1405", hours: 3.5, desc: "مدل‌سازی حجمی سردر ورودی و محوطه" },
-                { id: "log_103", empId: "emp_3", projectCode: "PP-201", category: "محاسبات تاخیرات و بخشنامه ۵۰۹۰", date: "22 / 07 / 1405", hours: 6.0, desc: "بررسی تاخیرات مجاز و غیرمجاز اقساط پیش‌پرداخت طبق بخشنامه ۵۰۹۰" },
-                { id: "log_104", empId: "emp_4", projectCode: "PP-202", category: "رسیدگی به صورت‌وضعیت و تعدیل", date: "23 / 07 / 1405", hours: 5.0, desc: "کنترل احجام و ریزشت متره صورت‌وضعیت شماره ۴" },
-                { id: "log_105", empId: "emp_5", projectCode: "PP-301", category: "ثبت اسناد حسابداری و مالی", date: "24 / 07 / 1405", hours: 4.0, desc: "تنظیم گزارش مالی پروژه‌ها و تطبیق صورت‌حساب‌ها" }
-            ]
-        };
-
-        const DB_KEY = "PARS_PARNOUN_ARCH_DB_V5";
-        let db = loadDatabase();
-        let activeSession = null; // { type: 'admin' | 'employee', user: {...} }
-        let chartInstances = { dept: null, project: null, staff: null };
-
-        function loadDatabase() {
-            try {
-                const raw = localStorage.getItem(DB_KEY);
-                if (raw) {
-                    const parsed = JSON.parse(raw);
-                    return { ...INITIAL_DATABASE, ...parsed };
-                }
-            } catch (e) {
-                console.warn("خطا در خواندن حافظه محلی:", e);
-            }
-            return JSON.parse(JSON.stringify(INITIAL_DATABASE));
-        }
-
-        function saveDatabase() {
-            localStorage.setItem(DB_KEY, JSON.stringify(db));
-            if (db.firebaseUrl) {
-                fetch(`${db.firebaseUrl.replace(/\/$/, '')}/parsparnoun_data.json`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(db)
-                }).catch(() => {});
-            }
-        }
-
-        // ۳. فرمت تاریخ دقیق به صورت «روز / ماه / سال»
-        function getTodayFormatted() {
-            try {
-                const parts = new Intl.DateTimeFormat('fa-IR-u-nu-latn', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                }).formatToParts(new Date());
-                const day = parts.find(p => p.type === 'day')?.value || '25';
-                const month = parts.find(p => p.type === 'month')?.value || '07';
-                const year = parts.find(p => p.type === 'year')?.value || '1405';
-                return `${day} / ${month} / ${year}`;
-            } catch {
-                return "25 / 07 / 1405";
-            }
-        }
-
-        // ۴. راه‌اندازی اولیه صفحه
-        window.addEventListener('DOMContentLoaded', () => {
-            setEyeTheme(db.eyeTheme || 'default', false);
-            applyLogoEverywhere();
-            populateHourSelects();
-            renderLoginDepartments();
-            document.getElementById('headerTodayDate').textContent = getTodayFormatted();
-            document.getElementById('admLogDate').value = getTodayFormatted();
-            document.getElementById('empFormDate').value = getTodayFormatted();
-        });
-
-        function setEyeTheme(themeName, notify = true) {
-            if (themeName === 'default') {
-                document.documentElement.removeAttribute('data-theme');
-            } else {
-                document.documentElement.setAttribute('data-theme', themeName);
-            }
-            db.eyeTheme = themeName;
-            saveDatabase();
-            if (notify) {
-                const names = { default: 'بوم سنگی گرم', silver: 'بوم نقره‌ای ملایم', sand: 'بوم کاغذی بژ' };
-                showToast(`تناژ صفحه به «${names[themeName]}» تغییر یافت.`);
-            }
-        }
-
-        function applyLogoEverywhere() {
-            const logoSrc = db.logoDataUrl || PARS_PARNOUN_OFFICIAL_LOGO;
-            document.querySelectorAll('.company-logo-img').forEach(img => {
-                img.src = logoSrc;
-            });
-        }
-
-        function populateHourSelects() {
-            const selects = document.querySelectorAll('.hour-select');
-            let html = '';
-            for (let h = 0.5; h <= 16; h += 0.5) {
-                const selected = h === 4.0 ? 'selected' : '';
-                html += `<option value="${h}" ${selected}>${h} ساعت</option>`;
-            }
-            selects.forEach(s => s.innerHTML = html);
-        }
-
-        function renderLoginDepartments() {
-            const container = document.getElementById('loginDeptsList');
-            container.innerHTML = db.departments.map(d => `
-                <span class="px-2.5 py-1 rounded-md bg-canvas-subtle border border-canvas-border text-[11px] text-ink-muted font-medium">
-                    ${d.name}
-                </span>
-            `).join('');
-        }
-
-        function togglePassVisibility() {
-            const inp = document.getElementById('loginPass');
-            inp.type = inp.type === 'password' ? 'text' : 'password';
-        }
-
-        // ۵. فرآیند ورود مدیر و کارمندان
-        function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('loginUser').value.trim();
-            const p = document.getElementById('loginPass').value.trim();
-            const errBox = document.getElementById('loginError');
-            errBox.classList.add('hidden');
-
-            // بررسی ورود مدیر
-            if (u.toLowerCase() === db.admin.username.toLowerCase() && p === db.admin.password) {
-                activeSession = { type: 'admin', user: db.admin };
-                openWorkspace();
-                return;
-            }
-
-            // بررسی ورود کارمندان
-            const emp = db.employees.find(item => item.username.toLowerCase() === u.toLowerCase() && item.password === p);
-            if (emp) {
-                activeSession = { type: 'employee', user: emp };
-                openWorkspace();
-                return;
-            }
-
-            errBox.classList.remove('hidden');
-        }
-
-        function openWorkspace() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('appShell').classList.remove('hidden');
-
-            if (activeSession.type === 'admin') {
-                document.getElementById('adminNav').classList.remove('hidden');
-                document.getElementById('adminQuickActions').classList.remove('hidden');
-                document.getElementById('adminWorkspace').classList.remove('hidden');
-                document.getElementById('empSidebarInfo').classList.add('hidden');
-                document.getElementById('employeeWorkspace').classList.add('hidden');
-
-                document.getElementById('sidebarUserName').textContent = db.admin.name;
-                document.getElementById('sidebarUserRole').textContent = "مدیر ارشد سامانه";
-                document.getElementById('sidebarUserBadge').textContent = "ADMIN";
-
-                document.getElementById('setAdminUser').value = db.admin.username;
-                document.getElementById('setAdminPass').value = db.admin.password;
-                document.getElementById('firebaseEndpointInput').value = db.firebaseUrl || '';
-
-                refreshAllAdminViews();
-                switchAdminTab('dashboard');
-            } else {
-                const emp = activeSession.user;
-                const dept = db.departments.find(d => d.id === emp.deptId);
-
-                document.getElementById('adminNav').classList.add('hidden');
-                document.getElementById('adminQuickActions').classList.add('hidden');
-                document.getElementById('adminWorkspace').classList.add('hidden');
-                document.getElementById('empSidebarInfo').classList.remove('hidden');
-                document.getElementById('employeeWorkspace').classList.remove('hidden');
-
-                document.getElementById('sidebarUserName').textContent = emp.name;
-                document.getElementById('sidebarUserRole').textContent = emp.role;
-                document.getElementById('sidebarUserBadge').textContent = emp.username;
-                document.getElementById('empSideDept').textContent = dept ? dept.name : 'عمومی';
-                document.getElementById('empSideRole').textContent = emp.role;
-                document.getElementById('pageHeaderTitle').textContent = `میز کار تخصصی — ${emp.name}`;
-
-                refreshEmployeeWorkspace();
-            }
-        }
-
-        function logout() {
-            activeSession = null;
-            document.getElementById('loginPass').value = '';
-            document.getElementById('appShell').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-            renderLoginDepartments();
-        }
-
-        // ۶. ناوبری پنل مدیریت
-        function switchAdminTab(tabId) {
-            const tabs = ['dashboard', 'depts', 'users', 'logs', 'settings'];
-            const titles = {
-                dashboard: 'داشبورد مدیریتی و گزارش تحلیلی',
-                depts: 'مدیریت بخش‌های شرکت، پروژه‌ها و شرح خدمات',
-                users: 'مدیریت پرسنل و اختصاص نام کاربری و رمز عبور',
-                logs: 'لوح جامع کارکردهای ثبت‌شده شرکت',
-                settings: 'تنظیمات نماد شرکت، امنیت و خروجی گیت‌هاب'
-            };
-
-            tabs.forEach(t => {
-                document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tabId);
-                const navEl = document.getElementById(`nav-${t}`);
-                if (navEl) navEl.classList.toggle('active', t === tabId);
-            });
-
-            document.getElementById('pageHeaderTitle').textContent = titles[tabId] || 'پنل مدیریت';
-            if (tabId === 'dashboard') refreshDashboard();
-        }
-
-        function refreshAllAdminViews() {
-            populateFilterDropdowns();
-            refreshDashboard();
-            renderDepartmentsAndProjects();
-            renderEmployeesTable();
-            renderAdminLogsTable();
-        }
-
-        function populateFilterDropdowns() {
-            const fltDept = document.getElementById('fltDept');
-            const fltProject = document.getElementById('fltProject');
-            const fltUser = document.getElementById('fltUser');
-
-            fltDept.innerHTML = `<option value="ALL">همه بخش‌های شرکت (${db.departments.length} بخش)</option>` +
-                db.departments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
-
-            fltProject.innerHTML = `<option value="ALL">همه پروژه‌ها (${db.projects.length} پروژه)</option>` +
-                db.projects.map(p => `<option value="${p.code}">[${p.code}] ${p.name}</option>`).join('');
-
-            fltUser.innerHTML = `<option value="ALL">همه کارشناسان (${db.employees.length} نفر)</option>` +
-                db.employees.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
-
-            // پر کردن دراپ‌داون‌های فرم‌ها
-            const deptOptions = db.departments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
-            document.getElementById('newProjDept').innerHTML = deptOptions;
-            document.getElementById('empDeptSelect').innerHTML = deptOptions;
-
-            document.getElementById('admLogUser').innerHTML = db.employees.map(u => `<option value="${u.id}">${u.name}</option>`).join('');
-            document.getElementById('admLogProject').innerHTML = db.projects.map(p => `<option value="${p.code}">[${p.code}] ${p.name}</option>`).join('');
-            document.getElementById('admLogCategory').innerHTML = db.categories.map(c => `<option value="${c}">${c}</option>`).join('');
-        }
-
-        function resetFilters() {
-            document.getElementById('fltDept').value = 'ALL';
-            document.getElementById('fltProject').value = 'ALL';
-            document.getElementById('fltUser').value = 'ALL';
-            refreshDashboard();
-        }
-
-        // ۷. محاسبه داشبورد و رسم نمودارهای مات و چشم‌نواز
-        function refreshDashboard() {
-            const deptVal = document.getElementById('fltDept').value || 'ALL';
-            const projVal = document.getElementById('fltProject').value || 'ALL';
-            const userVal = document.getElementById('fltUser').value || 'ALL';
-
-            const filteredLogs = db.worklogs.filter(log => {
-                const emp = db.employees.find(e => e.id === log.empId);
-                const proj = db.projects.find(p => p.code === log.projectCode);
-                const logDeptId = proj?.deptId || emp?.deptId;
-
-                if (deptVal !== 'ALL' && logDeptId !== deptVal) return false;
-                if (projVal !== 'ALL' && log.projectCode !== projVal) return false;
-                if (userVal !== 'ALL' && log.empId !== userVal) return false;
-                return true;
-            });
-
-            const totalHours = filteredLogs.reduce((sum, l) => sum + Number(l.hours || 0), 0);
-            document.getElementById('kpiHours').textContent = totalHours.toFixed(1);
-            document.getElementById('kpiProjects').textContent = db.projects.length;
-            document.getElementById('kpiDeptsNote').textContent = `در ${db.departments.length} واحد سازمانی فعال`;
-            document.getElementById('kpiStaff').textContent = db.employees.length;
-            document.getElementById('kpiLogs').textContent = filteredLogs.length;
-
-            renderAnalyticalCharts(filteredLogs);
-            renderDeptSummaryCards();
-        }
-
-        function renderAnalyticalCharts(logs) {
-            // پالت رنگ مات، خاکی و معماری (بدون رنگ‌های جیغ و خسته‌کننده چشم)
-            const archPalette = ['#2B3A42', '#8C6D46', '#48655A', '#5C6B73', '#9E7B66', '#3F4E4F', '#7D8570'];
-
-            // ۱. نمودار بخش‌ها
-            const deptTotals = {};
-            db.departments.forEach(d => deptTotals[d.name] = 0);
-            logs.forEach(l => {
-                const proj = db.projects.find(p => p.code === l.projectCode);
-                const emp = db.employees.find(e => e.id === l.empId);
-                const dept = db.departments.find(d => d.id === (proj?.deptId || emp?.deptId));
-                const dName = dept ? dept.name : 'سایر';
-                deptTotals[dName] = (deptTotals[dName] || 0) + Number(l.hours);
-            });
-
-            if (chartInstances.dept) chartInstances.dept.destroy();
-            chartInstances.dept = new Chart(document.getElementById('chartByDept'), {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(deptTotals),
-                    datasets: [{
-                        data: Object.values(deptTotals),
-                        backgroundColor: archPalette,
-                        borderColor: '#FAF9F6',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom', labels: { font: { family: 'Vazirmatn', size: 11 }, color: '#525860' } }
-                    }
-                }
-            });
-
-            // ۲. نمودار پروژه‌ها
-            const projTotals = {};
-            db.projects.forEach(p => projTotals[p.code] = 0);
-            logs.forEach(l => {
-                projTotals[l.projectCode] = (projTotals[l.projectCode] || 0) + Number(l.hours);
-            });
-
-            if (chartInstances.project) chartInstances.project.destroy();
-            chartInstances.project = new Chart(document.getElementById('chartByProject'), {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(projTotals),
-                    datasets: [{
-                        label: 'ساعت کارکرد',
-                        data: Object.values(projTotals),
-                        backgroundColor: '#2B3A42',
-                        borderRadius: 5,
-                        barThickness: 22
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Vazirmatn', size: 10 } } },
-                        x: { grid: { display: false }, ticks: { font: { family: 'Vazirmatn', size: 10 } } }
-                    }
-                }
-            });
-
-            // ۳. نمودار پرسنل
-            const staffTotals = {};
-            db.employees.forEach(e => staffTotals[e.name] = 0);
-            logs.forEach(l => {
-                const emp = db.employees.find(e => e.id === l.empId);
-                if (emp) staffTotals[emp.name] = (staffTotals[emp.name] || 0) + Number(l.hours);
-            });
-
-            if (chartInstances.staff) chartInstances.staff.destroy();
-            chartInstances.staff = new Chart(document.getElementById('chartByStaff'), {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(staffTotals),
-                    datasets: [{
-                        label: 'مجموع ساعات',
-                        data: Object.values(staffTotals),
-                        backgroundColor: '#8C6D46',
-                        borderRadius: 5,
-                        barThickness: 18
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Vazirmatn', size: 10 } } },
-                        y: { grid: { display: false }, ticks: { font: { family: 'Vazirmatn', size: 11 } } }
-                    }
-                }
-            });
-        }
-
-        function renderDeptSummaryCards() {
-            const container = document.getElementById('deptSummaryCards');
-            container.innerHTML = db.departments.map(d => {
-                const staffCount = db.employees.filter(e => e.deptId === d.id).length;
-                const projCount = db.projects.filter(p => p.deptId === d.id).length;
-                const deptHours = db.worklogs.reduce((acc, l) => {
-                    const p = db.projects.find(pr => pr.code === l.projectCode);
-                    const e = db.employees.find(em => em.id === l.empId);
-                    if ((p && p.deptId === d.id) || (e && e.deptId === d.id)) {
-                        return acc + Number(l.hours);
-                    }
-                    return acc;
-                }, 0);
-
-                return `
-                    <div class="p-4 rounded-lg bg-canvas-subtle/60 border border-canvas-border flex flex-col justify-between">
-                        <div>
-                            <div class="text-xs font-bold text-ink">${d.name}</div>
-                            <p class="text-[11px] text-ink-muted mt-1 leading-relaxed">${d.desc || 'واحد تخصصی مهندسان مشاور پارس پرنون'}</p>
-                        </div>
-                        <div class="mt-4 pt-3 border-t border-canvas-border flex items-center justify-between text-[11px] text-ink-muted">
-                            <span>پرسنل: <strong class="text-ink">${staffCount} نفر</strong></span>
-                            <span>پروژه: <strong class="text-ink">${projCount}</strong></span>
-                            <span>کارکرد: <strong class="text-ink">${deptHours.toFixed(1)} ساعت</strong></span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ۸. مدیریت بخش‌ها، پروژه‌ها و خدمات تخصصی
-        function renderDepartmentsAndProjects() {
-            // لیست بخش‌ها
-            const deptList = document.getElementById('deptsManageList');
-            deptList.innerHTML = db.departments.map(d => `
-                <div class="p-3 rounded-lg bg-canvas-surface border border-canvas-border flex items-center justify-between gap-2">
-                    <div>
-                        <div class="text-xs font-bold text-ink">${d.name}</div>
-                        <div class="text-[11px] text-ink-muted">${d.desc || '-'}</div>
-                    </div>
-                    <button onclick="deleteDepartment('${d.id}')" class="text-[11px] text-red-700 hover:underline px-2 py-1">حذف</button>
-                </div>
-            `).join('');
-
-            // جدول پروژه‌ها
-            const projTable = document.getElementById('projectsManageTable');
-            projTable.innerHTML = db.projects.map(p => {
-                const dept = db.departments.find(d => d.id === p.deptId);
-                const hrs = db.worklogs.filter(l => l.projectCode === p.code).reduce((s, l) => s + Number(l.hours), 0);
-                return `
-                    <tr class="hover:bg-canvas-subtle/40">
-                        <td class="py-2.5 px-3 font-mono font-semibold text-ink ltr-num">${p.code}</td>
-                        <td class="py-2.5 px-3 font-medium text-ink">${p.name}</td>
-                        <td class="py-2.5 px-3 text-ink-muted">${dept ? dept.name : '-'}</td>
-                        <td class="py-2.5 px-3 text-center font-medium">${hrs.toFixed(1)} ساعت</td>
-                        <td class="py-2.5 px-3 text-left">
-                            <button onclick="deleteProject('${p.code}')" class="text-red-700 hover:underline">حذف</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-
-            // لیست دسته‌بندی خدمات
-            const catList = document.getElementById('categoriesList');
-            catList.innerHTML = db.categories.map((c, idx) => `
-                <div class="px-3 py-1.5 rounded-lg bg-canvas-subtle border border-canvas-border text-xs flex items-center gap-2">
-                    <span>${c}</span>
-                    <button onclick="deleteCategory(${idx})" class="text-ink-faint hover:text-red-700 font-bold">×</button>
-                </div>
-            `).join('');
-        }
-
-        function addDepartment(e) {
-            e.preventDefault();
-            const name = document.getElementById('newDeptName').value.trim();
-            const desc = document.getElementById('newDeptDesc').value.trim();
-            if (!name) return;
-
-            db.departments.push({
-                id: 'dept_' + Date.now(),
-                name,
-                desc: desc || 'واحد تخصصی مهندسان مشاور پارس پرنون'
-            });
-            saveDatabase();
-            document.getElementById('newDeptName').value = '';
-            document.getElementById('newDeptDesc').value = '';
-            refreshAllAdminViews();
-            showToast(`«${name}» با موفقیت به بخش‌های شرکت اضافه شد.`);
-        }
-
-        function deleteDepartment(deptId) {
-            if (db.departments.length <= 1) {
-                showToast("حداقل یک بخش باید در سامانه باقی بماند.");
-                return;
-            }
-            db.departments = db.departments.filter(d => d.id !== deptId);
-            saveDatabase();
-            refreshAllAdminViews();
-            showToast("بخش مورد نظر حذف گردید.");
-        }
-
-        function addProject(e) {
-            e.preventDefault();
-            const code = document.getElementById('newProjCode').value.trim().toUpperCase();
-            const name = document.getElementById('newProjName').value.trim();
-            const deptId = document.getElementById('newProjDept').value;
-
-            if (db.projects.some(p => p.code.toUpperCase() === code)) {
-                showToast("این کد پروژه قبلاً ثبت شده است.");
-                return;
-            }
-
-            db.projects.push({ code, name, deptId });
-            saveDatabase();
-            document.getElementById('newProjCode').value = '';
-            document.getElementById('newProjName').value = '';
-            refreshAllAdminViews();
-            showToast(`پروژه «${name}» ثبت شد.`);
-        }
-
-        function deleteProject(code) {
-            db.projects = db.projects.filter(p => p.code !== code);
-            saveDatabase();
-            refreshAllAdminViews();
-            showToast("پروژه از فهرست حذف شد.");
-        }
-
-        function addTaskCategory(e) {
-            e.preventDefault();
-            const val = document.getElementById('newCatInput').value.trim();
-            if (!val) return;
-            db.categories.push(val);
-            saveDatabase();
-            document.getElementById('newCatInput').value = '';
-            refreshAllAdminViews();
-            showToast("عنوان فعالیت تخصصی اضافه شد.");
-        }
-
-        function deleteCategory(idx) {
-            db.categories.splice(idx, 1);
-            saveDatabase();
-            refreshAllAdminViews();
-        }
-
-        // ۹. مدیریت پرسنل و رمزهای عبور
-        function renderEmployeesTable() {
-            const tbody = document.getElementById('employeesTableBody');
-            tbody.innerHTML = db.employees.map(emp => {
-                const dept = db.departments.find(d => d.id === emp.deptId);
-                const totalH = db.worklogs.filter(l => l.empId === emp.id).reduce((s, l) => s + Number(l.hours), 0);
-                return `
-                    <tr class="hover:bg-canvas-subtle/40">
-                        <td class="py-3 px-3 font-bold text-ink">${emp.name}</td>
-                        <td class="py-3 px-3 text-ink-muted">${dept ? dept.name : '-'}</td>
-                        <td class="py-3 px-3 text-ink-muted">${emp.role}</td>
-                        <td class="py-3 px-3 font-mono text-ink ltr-num">${emp.username}</td>
-                        <td class="py-3 px-3 font-mono text-ink-muted ltr-num">${emp.password}</td>
-                        <td class="py-3 px-3 text-center font-semibold">${totalH.toFixed(1)} ساعت</td>
-                        <td class="py-3 px-3 text-left space-x-2 space-x-reverse">
-                            <button onclick="promptChangePassword('${emp.id}')" class="text-accent hover:underline">تغییر رمز</button>
-                            <button onclick="deleteEmployee('${emp.id}')" class="text-red-700 hover:underline">حذف</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function addEmployee(e) {
-            e.preventDefault();
-            const name = document.getElementById('empFullName').value.trim();
-            const deptId = document.getElementById('empDeptSelect').value;
-            const role = document.getElementById('empRoleTitle').value.trim();
-            const username = document.getElementById('empUsername').value.trim();
-            const password = document.getElementById('empPassword').value.trim();
-
-            if (username.toLowerCase() === db.admin.username.toLowerCase() ||
-                db.employees.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-                showToast("این نام کاربری قبلاً استفاده شده است.");
-                return;
-            }
-
-            db.employees.push({
-                id: 'emp_' + Date.now(),
-                name,
-                deptId,
-                role,
-                username,
-                password
-            });
-            saveDatabase();
-            e.target.reset();
-            refreshAllAdminViews();
-            showToast(`حساب کاربری «${name}» با نام کاربری ${username} ایجاد شد.`);
-        }
-
-        function promptChangePassword(empId) {
-            const emp = db.employees.find(e => e.id === empId);
-            if (!emp) return;
-            const newPass = prompt(`رمز عبور جدید برای «${emp.name}» (نام کاربری: ${emp.username}) را وارد نمایید:`, emp.password);
-            if (newPass && newPass.trim()) {
-                emp.password = newPass.trim();
-                saveDatabase();
-                renderEmployeesTable();
-                showToast(`رمز عبور ${emp.name} بروزرسانی شد.`);
-            }
-        }
-
-        function deleteEmployee(empId) {
-            db.employees = db.employees.filter(e => e.id !== empId);
-            saveDatabase();
-            refreshAllAdminViews();
-            showToast("حساب کارمند حذف گردید.");
-        }
-
-        // ۱۰. ثبت و مدیریت کارکردها (مدیر و کارمند)
-        function adminAddWorklog(e) {
-            e.preventDefault();
-            const empId = document.getElementById('admLogUser').value;
-            const projectCode = document.getElementById('admLogProject').value;
-            const category = document.getElementById('admLogCategory').value;
-            const date = document.getElementById('admLogDate').value.trim();
-            const hours = parseFloat(document.getElementById('admLogHours').value);
-            const desc = document.getElementById('admLogDesc').value.trim() || 'ثبت توسط مدیریت';
-
-            db.worklogs.unshift({
-                id: 'log_' + Date.now(),
-                empId,
-                projectCode,
-                category,
-                date,
-                hours,
-                desc
-            });
-            saveDatabase();
-            document.getElementById('admLogDesc').value = '';
-            refreshAllAdminViews();
-            showToast("کارکرد جدید با موفقیت ثبت شد.");
-        }
-
-        function renderAdminLogsTable() {
-            const q = (document.getElementById('searchLogsInput')?.value || '').trim().toLowerCase();
-            const tbody = document.getElementById('adminLogsTableBody');
-
-            const rows = db.worklogs.filter(l => {
-                if (!q) return true;
-                const emp = db.employees.find(e => e.id === l.empId);
-                const proj = db.projects.find(p => p.code === l.projectCode);
-                const text = `${emp?.name || ''} ${proj?.name || ''} ${l.projectCode} ${l.category} ${l.date} ${l.desc}`.toLowerCase();
-                return text.includes(q);
-            });
-
-            tbody.innerHTML = rows.map(l => {
-                const emp = db.employees.find(e => e.id === l.empId);
-                const proj = db.projects.find(p => p.code === l.projectCode);
-                const dept = db.departments.find(d => d.id === (proj?.deptId || emp?.deptId));
-                return `
-                    <tr class="hover:bg-canvas-subtle/40">
-                        <td class="py-2.5 px-3 font-mono ltr-num text-ink">${l.date}</td>
-                        <td class="py-2.5 px-3 font-bold text-ink">${emp ? emp.name : 'حذف‌شده'}</td>
-                        <td class="py-2.5 px-3 text-ink-muted">${dept ? dept.name : '-'}</td>
-                        <td class="py-2.5 px-3 text-ink">${proj ? proj.name : l.projectCode}</td>
-                        <td class="py-2.5 px-3 text-ink-muted">${l.category}</td>
-                        <td class="py-2.5 px-3 text-center font-bold text-ink">${Number(l.hours).toFixed(1)}</td>
-                        <td class="py-2.5 px-3 text-ink-muted max-w-xs truncate" title="${l.desc}">${l.desc}</td>
-                        <td class="py-2.5 px-3 text-left">
-                            <button onclick="deleteWorklog('${l.id}')" class="text-red-700 hover:underline">حذف</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function deleteWorklog(logId) {
-            db.worklogs = db.worklogs.filter(l => l.id !== logId);
-            saveDatabase();
-            if (activeSession?.type === 'admin') {
-                refreshAllAdminViews();
-            } else {
-                refreshEmployeeWorkspace();
-            }
-            showToast("رکورد کارکرد حذف شد.");
-        }
-
-        // ۱۱. میز کار کارمندان
-        function refreshEmployeeWorkspace() {
-            const emp = activeSession.user;
-            document.getElementById('empFormProject').innerHTML = db.projects.map(p => `<option value="${p.code}">[${p.code}] ${p.name}</option>`).join('');
-            document.getElementById('empFormCategory').innerHTML = db.categories.map(c => `<option value="${c}">${c}</option>`).join('');
-
-            const myLogs = db.worklogs.filter(l => l.empId === emp.id);
-            const sumHours = myLogs.reduce((s, l) => s + Number(l.hours), 0);
-            const uniqueProjs = new Set(myLogs.map(l => l.projectCode)).size;
-
-            document.getElementById('empTotalHours').textContent = sumHours.toFixed(1);
-            document.getElementById('empTotalLogs').textContent = myLogs.length;
-            document.getElementById('empProjectsCount').textContent = uniqueProjs;
-
-            const tbody = document.getElementById('empLogsTableBody');
-            if (myLogs.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-ink-faint">هنوز کارکردی ثبت نکرده‌اید.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = myLogs.map(l => {
-                const proj = db.projects.find(p => p.code === l.projectCode);
-                return `
-                    <tr class="hover:bg-canvas-subtle/40">
-                        <td class="py-2.5 px-3 font-mono ltr-num">${l.date}</td>
-                        <td class="py-2.5 px-3 font-medium text-ink">${proj ? proj.name : l.projectCode}</td>
-                        <td class="py-2.5 px-3 text-ink-muted">${l.category}</td>
-                        <td class="py-2.5 px-3 text-center font-bold">${Number(l.hours).toFixed(1)}</td>
-                        <td class="py-2.5 px-3 text-ink-muted">${l.desc}</td>
-                        <td class="py-2.5 px-3 text-left">
-                            <button onclick="deleteWorklog('${l.id}')" class="text-red-700 hover:underline">حذف</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function employeeAddWorklog(e) {
-            e.preventDefault();
-            const emp = activeSession.user;
-            const projectCode = document.getElementById('empFormProject').value;
-            const category = document.getElementById('empFormCategory').value;
-            const date = document.getElementById('empFormDate').value.trim();
-            const hours = parseFloat(document.getElementById('empFormHours').value);
-            const desc = document.getElementById('empFormDesc').value.trim();
-
-            db.worklogs.unshift({
-                id: 'log_' + Date.now(),
-                empId: emp.id,
-                projectCode,
-                category,
-                date,
-                hours,
-                desc
-            });
-            saveDatabase();
-            document.getElementById('empFormDesc').value = '';
-            refreshEmployeeWorkspace();
-            showToast("گزارش کارکرد روزانه شما با موفقیت ثبت شد.");
-        }
-
-        // ۱۲. آپلود لوگو، تنظیمات امنیتی و دانلود فایل آماده گیت‌هاب
-        function uploadCustomLogo(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                db.logoDataUrl = e.target.result;
-                saveDatabase();
-                applyLogoEverywhere();
-                showToast("تصویر نماد شرکت جایگزین و ذخیره شد.");
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function resetToDefaultLogo() {
-            db.logoDataUrl = PARS_PARNOUN_OFFICIAL_LOGO;
-            saveDatabase();
-            applyLogoEverywhere();
-            showToast("نماد استاندارد مهندسان مشاور پارس پرنون بازنشانی شد.");
-        }
-
-        function updateAdminCredentials(e) {
-            e.preventDefault();
-            const u = document.getElementById('setAdminUser').value.trim();
-            const p = document.getElementById('setAdminPass').value.trim();
-            if (!u || !p) return;
-            db.admin.username = u;
-            db.admin.password = p;
-            saveDatabase();
-            showToast("نام کاربری و رمز عبور مدیر بروزرسانی شد.");
-        }
-
-        function saveFirebaseEndpoint() {
-            db.firebaseUrl = document.getElementById('firebaseEndpointInput').value.trim();
-            saveDatabase();
-            showToast("تنظیمات اتصال ابری ذخیره شد.");
-        }
-
-        // خروجی اکسل CSV
-        function exportCSV() {
-            let csv = "\uFEFFتاریخ,نام کارشناس,بخش,کد پروژه,نام پروژه,نوع فعالیت,ساعت کارکرد,توضیحات\n";
-            db.worklogs.forEach(l => {
-                const emp = db.employees.find(e => e.id === l.empId);
-                const proj = db.projects.find(p => p.code === l.projectCode);
-                const dept = db.departments.find(d => d.id === (proj?.deptId || emp?.deptId));
-                const row = [
-                    `"${l.date}"`,
-                    `"${emp ? emp.name : ''}"`,
-                    `"${dept ? dept.name : ''}"`,
-                    `"${l.projectCode}"`,
-                    `"${proj ? proj.name : ''}"`,
-                    `"${l.category}"`,
-                    `"${l.hours}"`,
-                    `"${(l.desc || '').replace(/"/g, '""')}"`
-                ];
-                csv += row.join(",") + "\n";
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ParsParnoun_Timesheet_${getTodayFormatted().replace(/\s|\//g, '-')}.csv`;
-            a.click();
-        }
-
-        // تولید فایل یکپارچه index.html با داده‌های جدید برای گیت‌هاب
-        function downloadUpdatedSiteFile() {
-            let fullHtml = document.documentElement.outerHTML;
-            const updatedInitScript = `const INITIAL_DATABASE = ${JSON.stringify(db, null, 4)};`;
-            fullHtml = fullHtml.replace(/const INITIAL_DATABASE = \{[\s\S]*?\n        \};/, updatedInitScript);
-
-            const blob = new Blob(["<!DOCTYPE html>\n" + fullHtml], { type: "text/html;charset=utf-8" });
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = "index.html";
-            a.click();
-          
-        }
-
-        function showToast(msg) {
-            const container = document.getElementById('toastContainer');
-            const el = document.createElement('div');
-            el.className = "arch-card px-4 py-3 text-xs font-medium text-ink border-r-4 border-r-[#23272A] shadow-md pointer-events-auto";
-            el.textContent = msg;
-            container.appendChild(el);
             setTimeout(() => el.remove(), 3500);
         }
     </script>
