@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مهندسان مشاور پارس پرنون | سامانه مدیریت پروژه، زمان‌بندی و کارکرد</title>
+    <title>مهندسان مشاور پارس پرنون | سامانه جامع مدیریت، کنترل پروژه و کارکرد</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -47,7 +47,7 @@
     </script>
 
     <style>
-        /* پوسته پیش‌فرض: سنگ گرم معماری و سرمه‌ای ذغالی (بدون سفیدی تند) */
+        /* پوسته پیش‌فرض: سنگ گرم معماری و سرمه‌ای ذغالی (ضد خستگی چشم) */
         :root {
             --bg-canvas: #DAD5CB;
             --bg-card: #E6E2D8;
@@ -158,6 +158,23 @@
             box-shadow: 0 0 0 2px rgba(42, 67, 89, 0.2);
         }
 
+        .inline-num-input {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-main);
+            color: var(--text-main);
+            border-radius: 5px;
+            padding: 0.2rem 0.35rem;
+            font-size: 0.78rem;
+            width: 62px;
+            text-align: center;
+            font-family: monospace;
+            font-weight: 700;
+        }
+        .inline-num-input:focus {
+            border-color: #B68D40;
+            outline: none;
+        }
+
         .btn-solid {
             background-color: var(--sidebar-bg);
             color: var(--sidebar-text);
@@ -203,7 +220,7 @@
             gap: 0.7rem;
             padding: 0.65rem 0.9rem;
             border-radius: 8px;
-            font-size: 0.81rem;
+            font-size: 0.82rem;
             color: rgba(230, 226, 216, 0.72);
             font-weight: 500;
             cursor: pointer;
@@ -250,7 +267,7 @@
         }
 
         @media print {
-            aside, header, #filterPanelCard, .no-print {
+            aside, header, #filterPanelCard {
                 display: none !important;
             }
         }
@@ -261,11 +278,11 @@
     <!-- نوار اعلان (Toast) -->
     <div id="toastBox" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
 
-    <!-- مودال ویرایش کامل کارمند، سمت سازمانی و دسترسی برنامه زمان‌بندی -->
+    <!-- مودال ویرایش کامل کارمند، سمت سازمانی و دسترسی کنترل پروژه -->
     <div id="editEmployeeModal" class="force-hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="panel-card w-full max-w-lg p-6 space-y-4">
             <div class="flex items-center justify-between border-b border-canvas-border pb-3">
-                <h3 class="text-sm font-bold text-ink">ویرایش مشخصات، سمت و دسترسی برنامه زمان‌بندی</h3>
+                <h3 class="text-sm font-bold text-ink">ویرایش مشخصات، سمت سازمانی و دسترسی کنترل پروژه</h3>
                 <button onclick="closeEditEmployeeModal()" class="text-ink-muted hover:text-ink text-lg font-bold">×</button>
             </div>
             <form onsubmit="saveEditedEmployee(event)" class="space-y-3.5">
@@ -309,76 +326,14 @@
                 </div>
                 <div class="panel-inset p-3.5">
                     <label class="flex items-center gap-2.5 text-xs font-bold text-ink cursor-pointer">
-                        <input type="checkbox" id="editEmpScheduleAccess" class="w-4 h-4 accent-[#1B222C]">
-                        <span>اعطای مجوز ورود و ویرایش اطلاعات در بخش «برنامه زمان‌بندی و کنترل پروژه»</span>
+                        <input type="checkbox" id="editEmpProjControl" class="w-4 h-4 accent-[#B68D40]">
+                        <span>اعطای دسترسی به «بخش کنترل پروژه و ثبت برنامه زمان‌بندی (WBS)»</span>
                     </label>
+                    <p class="text-[11px] text-ink-muted mt-1 pr-6">در صورت فعال بودن، این کارمند می‌تواند جدول برنامه زمان‌بندی پروژه‌ها را وارد و ویرایش کند و نمودارهای انحراف معیار را ببیند.</p>
                 </div>
                 <div class="flex items-center justify-end gap-2 pt-3 border-t border-canvas-border">
                     <button type="button" onclick="closeEditEmployeeModal()" class="btn-outline px-4 py-2 text-xs">انصراف</button>
                     <button type="submit" class="btn-solid px-5 py-2 text-xs">ذخیره تغییرات کارمند</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- مودال ویرایش آیتم برنامه زمان‌بندی -->
-    <div id="editScheduleModal" class="force-hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-        <div class="panel-card w-full max-w-xl p-6 space-y-4">
-            <div class="flex items-center justify-between border-b border-canvas-border pb-3">
-                <h3 class="text-sm font-bold text-ink">ویرایش اطلاعات زمان‌بندی و پیشرفت پروژه</h3>
-                <button onclick="closeEditScheduleModal()" class="text-ink-muted hover:text-ink text-lg font-bold">×</button>
-            </div>
-            <form onsubmit="saveEditedScheduleItem(event)" class="space-y-3.5">
-                <input type="hidden" id="editSchId">
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs text-ink-muted mb-1">کد پروژه / فاز</label>
-                        <input type="text" id="editSchCode" required dir="ltr" class="form-control w-full text-left font-mono">
-                    </div>
-                    <div class="sm:col-span-2">
-                        <label class="block text-xs text-ink-muted mb-1">نام پروژه / بسته کاری</label>
-                        <input type="text" id="editSchName" required class="form-control w-full">
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label class="block text-xs text-ink-muted mb-1">واحد سازمانی (بخش)</label>
-                        <select id="editSchDept" class="form-control w-full"></select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-ink-muted mb-1">تاریخ شروع (روز/ماه/سال)</label>
-                        <input type="text" id="editSchStart" required dir="ltr" class="form-control w-full text-center font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-ink-muted mb-1">تاریخ پایان (روز/ماه/سال)</label>
-                        <input type="text" id="editSchEnd" required dir="ltr" class="form-control w-full text-center font-mono">
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div>
-                        <label class="block text-xs text-ink-muted mb-1">ضریب وزنی (Weight)</label>
-                        <input type="number" id="editSchWeight" required min="1" max="100" step="0.5" class="form-control w-full text-center font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-ink-muted mb-1">پیشرفت برنامه‌ای (%)</label>
-                        <input type="number" id="editSchPlanned" required min="0" max="100" step="0.5" class="form-control w-full text-center font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-ink-muted mb-1">پیشرفت واقعی (%)</label>
-                        <input type="number" id="editSchActual" required min="0" max="100" step="0.5" class="form-control w-full text-center font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-ink-muted mb-1">تأخیر / تعجیل (روز)</label>
-                        <input type="number" id="editSchDelay" required step="1" class="form-control w-full text-center font-mono" title="عدد مثبت = روز تأخیر، عدد منفی = روز جلوتر از برنامه">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs text-ink-muted mb-1">توضیحات فنی، علت انحراف یا اقدامات اصلاحی</label>
-                    <input type="text" id="editSchNotes" class="form-control w-full">
-                </div>
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-canvas-border">
-                    <button type="button" onclick="closeEditScheduleModal()" class="btn-outline px-4 py-2 text-xs">انصراف</button>
-                    <button type="submit" class="btn-solid px-5 py-2 text-xs">ثبت و بروزرسانی نمودارها</button>
                 </div>
             </form>
         </div>
@@ -406,7 +361,6 @@
         <div class="my-auto w-full max-w-3xl mx-auto py-6">
             <div class="panel-card overflow-hidden grid grid-cols-1 md:grid-cols-12 shadow-xl">
                 
-                <!-- ستون راست: نماد شرکت -->
                 <div class="md:col-span-5 sidebar-shell p-8 flex flex-col justify-between items-center text-center border-b md:border-b-0 md:border-l border-canvas-border">
                     <div class="w-full flex flex-col items-center">
                         <div class="w-32 h-32 rounded-xl bg-[#EAE6DF] p-2.5 border-2 border-[#B68D40] shadow-md flex items-center justify-center mb-5">
@@ -417,7 +371,7 @@
                         </span>
                         <h1 id="loginBrandName" class="text-lg font-bold text-[#EAE6DF] mt-3">مهندسان مشاور پارس پرنون</h1>
                         <p id="loginBrandSub" class="text-xs text-[#EAE6DF]/70 mt-1.5 leading-relaxed">
-                            سامانه کنترل زمان پروژه‌ها، برنامه زمان‌بندی و ثبت کارکرد پرسنل
+                            سامانه کنترل پروژه (WBS & EVM)، مدیریت واحدهای فنی و ثبت کارکرد پرسنل
                         </p>
                     </div>
 
@@ -427,7 +381,6 @@
                     </div>
                 </div>
 
-                <!-- ستون چپ: فرم ورود -->
                 <div class="md:col-span-7 p-8 sm:p-10 flex flex-col justify-center">
                     <div class="mb-6">
                         <h2 class="text-base font-bold text-ink">ورود به حساب کاربری</h2>
@@ -495,45 +448,48 @@
 
                 <!-- منوی مدیر ارشد -->
                 <nav id="adminNav" class="force-hidden p-3 space-y-1">
-                    <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">پنل مدیریت ارشد</div>
-                    <div onclick="switchView('dashboard')" id="nav-dashboard" class="side-link active">
+                    <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white/40">مدیریت و تحلیل</div>
+                    <div onclick="switchMainView('dashboard')" id="nav-dashboard" class="side-link active">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
-                        <span>داشبورد کارکرد و زمان پروژه‌ها</span>
+                        <span>داشبورد و تحلیل زمان پروژه‌ها</span>
                     </div>
-                    <div onclick="switchView('schedule')" id="nav-schedule" class="side-link">
+                    <!-- بخش مستقل کنترل پروژه -->
+                    <div onclick="switchMainView('projcontrol')" id="nav-projcontrol" class="side-link">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                        <span>برنامه زمان‌بندی و انحراف معیار</span>
+                        <div class="flex items-center justify-between flex-1">
+                            <span>واحد کنترل پروژه (WBS)</span>
+                            <span class="px-1.5 py-0.2 rounded text-[9px] bg-[#B68D40]/30 text-[#D8B268]">جدید</span>
+                        </div>
                     </div>
-                    <div onclick="switchView('projects')" id="nav-projects" class="side-link">
+                    <div onclick="switchMainView('projects')" id="nav-projects" class="side-link">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                        <span>تعریف بخش‌ها و پروژه‌ها</span>
+                        <span>پروژه‌ها، بخش‌ها و بودجه زمانی</span>
                     </div>
-                    <div onclick="switchView('users')" id="nav-users" class="side-link">
+                    <div onclick="switchMainView('users')" id="nav-users" class="side-link">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                        <span>پرسنل، سمت‌ها و مجوزها</span>
+                        <span>پرسنل، سمت‌ها و دسترسی‌ها</span>
                     </div>
-                    <div onclick="switchView('logs')" id="nav-logs" class="side-link">
+                    <div onclick="switchMainView('logs')" id="nav-logs" class="side-link">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                         <span>لوح جامع کارکرد کل شرکت</span>
                     </div>
-                    <div onclick="switchView('settings')" id="nav-settings" class="side-link">
+                    <div onclick="switchMainView('settings')" id="nav-settings" class="side-link">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         <span>تنظیمات پیشرفته مدیریت</span>
                     </div>
                 </nav>
 
-                <!-- منوی کارمندان (شامل لینک برنامه زمان‌بندی فقط برای افراد مجاز) -->
+                <!-- منوی کارمند (شامل دسترسی به کنترل پروژه در صورت مجاز بودن) -->
                 <div id="empSidebarBox" class="force-hidden p-3 space-y-3">
                     <div id="empNavMenu" class="space-y-1">
-                        <div class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white/40">میز کار کارشناس</div>
-                        <div onclick="switchView('emp-timesheet')" id="nav-emp-timesheet" class="side-link active">
+                        <div class="px-3 py-1 text-[10px] font-bold text-white/40">منوی کارشناس</div>
+                        <div onclick="switchEmployeeView('timesheet')" id="emp-nav-timesheet" class="side-link active">
                             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>ثبت کارکرد روزانه (تایم‌شیت)</span>
+                            <span>ثبت کارکرد روزانه</span>
                         </div>
-                        <!-- این گزینه فقط در صورتی که مدیر دسترسی داده باشد نمایش داده می‌شود -->
-                        <div onclick="switchView('schedule')" id="nav-emp-schedule" class="force-hidden side-link">
+                        <div onclick="switchEmployeeView('projcontrol')" id="emp-nav-projcontrol" class="force-hidden side-link">
                             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                            <span>برنامه زمان‌بندی و کنترل پروژه</span>
+                            <span>واحد کنترل پروژه (WBS)</span>
                         </div>
                     </div>
 
@@ -547,8 +503,8 @@
                             <div id="empSideRole" class="text-xs font-semibold text-white mt-0.5">-</div>
                         </div>
                         <div>
-                            <div class="text-[10px] text-white/50">دسترسی کنترل پروژه و زمان‌بندی:</div>
-                            <div id="empSideScheduleBadge" class="text-[11px] font-bold mt-0.5">-</div>
+                            <div class="text-[10px] text-white/50">سطح دسترسی کنترل پروژه:</div>
+                            <div id="empSidePCAccess" class="text-[11px] font-bold text-white/80 mt-0.5">-</div>
                         </div>
                     </div>
                 </div>
@@ -593,9 +549,6 @@
                         <button onclick="exportCSV()" class="btn-accent px-3.5 py-1.5 text-xs flex items-center gap-1.5">
                             <span>خروجی اکسل کارکرد (CSV)</span>
                         </button>
-                        <button onclick="exportScheduleCSV()" class="btn-outline px-3 py-1.5 text-xs">
-                            خروجی اکسل زمان‌بندی
-                        </button>
                         <button onclick="window.print()" class="btn-outline px-3 py-1.5 text-xs">
                             چاپ / PDF
                         </button>
@@ -611,348 +564,986 @@
                 </div>
             </div>
 
-            <!-- فضای کاری اصلی -->
+            <!-- فضای کاری -->
             <div class="p-6 max-w-[1440px] w-full mx-auto space-y-6 flex-1">
 
-                <!-- ==================== بخش ۱: داشبورد کارکرد (مخصوص مدیر) ==================== -->
-                <section id="view-dashboard" class="force-hidden space-y-6">
+                <!-- ==================== ۱. ماژول مشترک و تخصصی «واحد کنترل پروژه و برنامه زمان‌بندی (WBS & EVM)» ==================== -->
+                <!-- قابل دسترسی برای مدیر ارشد و کارمندانی که دسترسی کنترل پروژه دارند -->
+                <section id="view-projcontrol" class="force-hidden space-y-6">
 
-                    <!-- پنل جامع فیلترهای پیشرفته و فیلتر دوره زمانی -->
-                    <div id="filterPanelCard" class="panel-card p-5 space-y-4">
-                        <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-canvas-border">
-                            <div class="flex flex-wrap items-center gap-1.5">
-                                <span class="text-xs font-bold text-ink ml-2 flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-[#B68D40]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                    <span>فیلتر دوره زمانی:</span>
-                                </span>
-                                <button type="button" onclick="setQuickPeriod('ALL')" id="prd-ALL" class="period-chip active">همه زمان‌ها</button>
-                                <button type="button" onclick="setQuickPeriod('TODAY')" id="prd-TODAY" class="period-chip">امروز</button>
-                                <button type="button" onclick="setQuickPeriod('WEEK')" id="prd-WEEK" class="period-chip">۷ روز اخیر</button>
-                                <button type="button" onclick="setQuickPeriod('MONTH')" id="prd-MONTH" class="period-chip">ماه جاری</button>
-                                <button type="button" onclick="setQuickPeriod('SEASON')" id="prd-SEASON" class="period-chip">فصل جاری (۳ ماه)</button>
-                                <button type="button" onclick="setQuickPeriod('YEAR')" id="prd-YEAR" class="period-chip">سال جاری</button>
+                    <!-- نوار انتخاب پروژه و خلاصه وضعیت کنترل پروژه -->
+                    <div class="panel-card p-5 flex flex-wrap items-center justify-between gap-4 border-r-4 border-r-[#B68D40]">
+                        <div class="flex flex-wrap items-center gap-4">
+                            <div>
+                                <label class="block text-[11px] font-bold text-ink-muted mb-1">انتخاب پروژه جهت تحلیل برنامه زمان‌بندی و انحراف معیار:</label>
+                                <select id="pcProjectFilter" onchange="refreshProjectControlModule()" class="form-control min-w-[280px] font-bold text-xs"></select>
                             </div>
-
-                            <div class="flex flex-wrap items-center gap-2">
-                                <div class="flex items-center gap-1.5">
-                                    <label class="text-[11px] font-semibold text-ink-muted">از تاریخ:</label>
-                                    <input type="text" id="fltDateFrom" oninput="onCustomDateInput()" dir="ltr" placeholder="01 / 07 / 1405" class="form-control w-32 text-center font-mono py-1 text-xs">
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <label class="text-[11px] font-semibold text-ink-muted">تا تاریخ:</label>
-                                    <input type="text" id="fltDateTo" oninput="onCustomDateInput()" dir="ltr" placeholder="30 / 07 / 1405" class="form-control w-32 text-center font-mono py-1 text-xs">
-                                </div>
+                            <div class="panel-inset px-3.5 py-2">
+                                <div class="text-[10px] text-ink-muted">وضعیت کلی زمان‌بندی:</div>
+                                <div id="pcOverallStatusBadge" class="text-xs font-bold text-ink mt-0.5">-</div>
                             </div>
                         </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 items-end">
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">۱. واحد سازمانی (بخش)</label>
-                                <select id="fltDept" onchange="refreshDashboard()" class="form-control w-full"></select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">۲. پروژه</label>
-                                <select id="fltProject" onchange="refreshDashboard()" class="form-control w-full"></select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">۳. وضعیت پروژه</label>
-                                <select id="fltProjStatus" onchange="refreshDashboard()" class="form-control w-full">
-                                    <option value="ALL">همه وضعیت‌ها</option>
-                                    <option value="active">فقط پروژه‌های در جریان</option>
-                                    <option value="completed">فقط پروژه‌های تکمیل‌شده</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">۴. کارشناس / پرسنل</label>
-                                <select id="fltUser" onchange="refreshDashboard()" class="form-control w-full"></select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">۵. سمت سازمانی</label>
-                                <select id="fltRole" onchange="refreshDashboard()" class="form-control w-full"></select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">۶. نوع فعالیت تخصصی</label>
-                                <select id="fltCategory" onchange="refreshDashboard()" class="form-control w-full"></select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">۷. حداقل ساعت رکورد</label>
-                                <select id="fltMinHours" onchange="refreshDashboard()" class="form-control w-full">
-                                    <option value="0">همه ساعات</option>
-                                    <option value="2">حداقل ۲ ساعت و بالاتر</option>
-                                    <option value="4">حداقل ۴ ساعت و بالاتر</option>
-                                    <option value="6">حداقل ۶ ساعت و بالاتر</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">۸. جستجو در توضیحات</label>
-                                <input type="text" id="fltSearchText" oninput="refreshDashboard()" placeholder="مثال: ۵۰۹۰، پلان..." class="form-control w-full">
-                            </div>
-                        </div>
-
-                        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 text-[11px] text-ink-muted">
-                            <div id="activeFilterSummaryText" class="font-medium">در حال نمایش تمامی رکوردها</div>
-                            <button type="button" onclick="resetFilters()" class="btn-outline px-3 py-1 text-xs font-semibold">
-                                پاک کردن تمام فیلترها (نمایش همه)
+                        <div class="flex items-center gap-2">
+                            <button onclick="exportScheduleCSV()" class="btn-outline px-3.5 py-2 text-xs font-semibold">
+                                خروجی اکسل برنامه زمان‌بندی (CSV)
                             </button>
                         </div>
                     </div>
 
-                    <!-- کارت‌های شاخص کلیدی (KPI) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="panel-card p-5 border-r-4 border-r-[#2A4359]">
-                            <div class="text-xs font-medium text-ink-muted">مجموع زمان صرف‌شده (در بازه انتخابی)</div>
-                            <div class="mt-2 flex items-baseline gap-1.5">
-                                <span id="kpiTotalHours" class="text-2xl font-bold text-ink">0</span>
-                                <span class="text-xs text-ink-muted">ساعت</span>
+                    <!-- کارت‌های شاخص آماری، انحراف معیار (Standard Deviation) و ارزش کسب‌شده (EVM) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                        <div class="panel-card p-4 border-t-4 border-t-[#2A4359]">
+                            <div class="text-[11px] text-ink-muted font-semibold">پیشرفت برنامه‌ای وزنی (PV)</div>
+                            <div class="mt-2 flex items-baseline gap-1">
+                                <span id="pcPlannedProgress" class="text-2xl font-bold text-ink">0%</span>
                             </div>
-                            <div id="kpiBudgetRatio" class="mt-2 text-[11px] text-ink-faint">از مجموع بودجه زمانی پروژه‌ها</div>
+                            <div class="mt-1 text-[10px] text-ink-faint">بر اساس وزن فعالیت‌ها (WBS)</div>
                         </div>
 
-                        <div class="panel-card p-5 border-r-4 border-r-[#B68D40]">
-                            <div class="text-xs font-medium text-ink-muted">پرمصرف‌ترین پروژه در این بازه</div>
-                            <div id="kpiTopProjectName" class="mt-2 text-sm font-bold text-ink truncate">-</div>
-                            <div id="kpiTopProjectStats" class="mt-2 text-[11px] font-semibold text-[#8C6520]">0 ساعت (0% از زمان)</div>
+                        <div class="panel-card p-4 border-t-4 border-t-[#2E6F65]">
+                            <div class="text-[11px] text-ink-muted font-semibold">پیشرفت واقعی وزنی (EV)</div>
+                            <div class="mt-2 flex items-baseline gap-1">
+                                <span id="pcActualProgress" class="text-2xl font-bold text-ink">0%</span>
+                            </div>
+                            <div id="pcSVText" class="mt-1 text-[10px] font-bold text-ink-muted">انحراف (SV): 0%</div>
                         </div>
 
-                        <div class="panel-card p-5 border-r-4 border-r-[#2E6F65]">
-                            <div class="text-xs font-medium text-ink-muted">میانگین زمان صرف‌شده در هر پروژه</div>
-                            <div class="mt-2 flex items-baseline gap-1.5">
-                                <span id="kpiAvgProjHours" class="text-2xl font-bold text-ink">0</span>
-                                <span class="text-xs text-ink-muted">ساعت / پروژه</span>
+                        <div class="panel-card p-4 border-t-4 border-t-[#B68D40]">
+                            <div class="text-[11px] text-ink-muted font-semibold">شاخص عملکرد زمان‌بندی (SPI)</div>
+                            <div class="mt-2 flex items-baseline gap-1">
+                                <span id="pcSPIValue" class="text-2xl font-bold text-ink font-mono">1.00</span>
                             </div>
-                            <div id="kpiActiveProjsNote" class="mt-2 text-[11px] text-ink-faint">در پروژه‌های فعال شرکت</div>
+                            <div class="mt-1 text-[10px] text-ink-faint">فرمول: EV ÷ PV (نرمال = 1.0)</div>
                         </div>
 
-                        <div class="panel-card p-5 border-r-4 border-r-[#A84A3B]">
-                            <div class="text-xs font-medium text-ink-muted">پرسنل مشارکت‌کننده و تعداد ثبت</div>
-                            <div class="mt-2 flex items-baseline gap-2">
-                                <span id="kpiStaffCount" class="text-2xl font-bold text-ink">0</span>
-                                <span class="text-xs text-ink-muted">نفر</span>
-                                <span class="text-ink-faint">|</span>
-                                <span id="kpiLogsCount" class="text-lg font-bold text-ink">0</span>
-                                <span class="text-xs text-ink-muted">رکورد</span>
+                        <div class="panel-card p-4 border-t-4 border-t-[#A84A3B]">
+                            <div class="text-[11px] text-ink-muted font-semibold">انحراف معیار پیشرفت (σ)</div>
+                            <div class="mt-2 flex items-baseline gap-1">
+                                <span id="pcStdDevProgress" class="text-2xl font-bold text-ink font-mono">0.00</span>
+                                <span class="text-[11px] text-ink-muted">%</span>
                             </div>
-                            <div class="mt-2 text-[11px] text-ink-faint">بر اساس فیلترهای انتخابی</div>
+                            <div id="pcVarianceProgress" class="mt-1 text-[10px] font-mono text-ink-faint">واریانس (σ²): 0.00</div>
+                        </div>
+
+                        <div class="panel-card p-4 border-t-4 border-t-[#5E503F]">
+                            <div class="text-[11px] text-ink-muted font-semibold">انحراف معیار زمانی (σ Days)</div>
+                            <div class="mt-2 flex items-baseline gap-1">
+                                <span id="pcStdDevDays" class="text-2xl font-bold text-ink font-mono">0.0</span>
+                                <span class="text-[11px] text-ink-muted">روز</span>
+                            </div>
+                            <div id="pcMeanDelayDays" class="mt-1 text-[10px] text-ink-faint">میانگین انحراف: 0 روز</div>
+                        </div>
+
+                        <div class="panel-card p-4 border-t-4 border-t-[#4A6B82]">
+                            <div class="text-[11px] text-ink-muted font-semibold">ضریب تغییرات و دامنه (CV)</div>
+                            <div class="mt-2 flex items-baseline gap-1">
+                                <span id="pcCVValue" class="text-xl font-bold text-ink font-mono">0%</span>
+                            </div>
+                            <div id="pcCriticalCount" class="mt-1 text-[10px] text-red-800 font-semibold">0 فعالیت خارج از باند ±1σ</div>
                         </div>
                     </div>
 
-                    <!-- جدول کالبدشکافی زمان هر پروژه -->
+                    <!-- فرم ورود ردیف جدید به جدول برنامه زمان‌بندی (WBS) -->
                     <div class="panel-card p-5 space-y-4">
                         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-canvas-border pb-3">
                             <div>
-                                <h3 class="text-sm font-bold text-ink">کالبدشکافی دقیق زمان مصرفی هر پروژه (سهم هر پروژه از کل زمان شرکت)</h3>
-                                <p class="text-[11px] text-ink-muted mt-0.5">نشان می‌دهد هر پروژه در دوره زمانی و فیلتر انتخابی چه مقدار از وقت شرکت و بودجه زمانی خود را مصرف کرده است</p>
+                                <h3 class="text-sm font-bold text-ink">ثبت فعالیت جدید در برنامه زمان‌بندی پروژه (WBS)</h3>
+                                <p class="text-[11px] text-ink-muted">کارشناس کنترل پروژه می‌تواند ساختار شکست کار (WBS)، وزن، زمان برنامه‌ای و پیشرفت واقعی را وارد نماید.</p>
                             </div>
-                            <button onclick="switchView('projects')" class="btn-outline px-3 py-1.5 text-xs">
-                                مدیریت بودجه زمانی پروژه‌ها
-                            </button>
                         </div>
 
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-right text-xs border-collapse">
-                                <thead>
-                                    <tr class="border-b border-canvas-border text-ink-muted panel-inset">
-                                        <th class="py-2.5 px-3">کد و نام پروژه</th>
-                                        <th class="py-2.5 px-3">واحد متولی</th>
-                                        <th class="py-2.5 px-3 text-center">وضعیت</th>
-                                        <th class="py-2.5 px-3 text-center">زمان صرف‌شده</th>
-                                        <th class="py-2.5 px-3 text-center">بودجه زمانی کل</th>
-                                        <th class="py-2.5 px-3 w-48">سهم از زمان دوره انتخابی (%)</th>
-                                        <th class="py-2.5 px-3 w-48">درصد مصرف بودجه پروژه</th>
-                                        <th class="py-2.5 px-3">نفرات درگیر در پروژه</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="projectTimeBreakdownBody" class="divide-y divide-canvas-border"></tbody>
-                            </table>
+                        <form onsubmit="addScheduleActivity(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-10 gap-2.5 items-end panel-inset p-3.5">
+                            <div class="lg:col-span-2">
+                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">پروژه</label>
+                                <select id="wbsProject" required class="form-control w-full"></select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">کد WBS</label>
+                                <input type="text" id="wbsCode" required dir="ltr" placeholder="WBS-1.4" class="form-control w-full text-center font-mono">
+                            </div>
+                            <div class="lg:col-span-2">
+                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">شرح فعالیت / فاز زمان‌بندی</label>
+                                <input type="text" id="wbsTitle" required placeholder="مثال: نقشه‌های اجرایی فاز ۲ معماری" class="form-control w-full">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">وزن فعالیت (%)</label>
+                                <input type="number" id="wbsWeight" required min="1" max="100" step="0.5" value="15" class="form-control w-full text-center font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">شروع (روز/ماه/سال)</label>
+                                <input type="text" id="wbsStart" required dir="ltr" placeholder="01 / 07 / 1405" class="form-control w-full text-center font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">پایان (روز/ماه/سال)</label>
+                                <input type="text" id="wbsEnd" required dir="ltr" placeholder="30 / 07 / 1405" class="form-control w-full text-center font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">مدت برنامه‌ای (روز)</label>
+                                <input type="number" id="wbsPlannedDays" required min="1" value="20" class="form-control w-full text-center font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">مدت واقعی (روز)</label>
+                                <input type="number" id="wbsActualDays" required min="0" value="18" class="form-control w-full text-center font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">برنامه‌ای PV (%)</label>
+                                <input type="number" id="wbsPlannedPct" required min="0" max="100" value="80" class="form-control w-full text-center font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">واقعی EV (%)</label>
+                                <input type="number" id="wbsActualPct" required min="0" max="100" value="70" class="form-control w-full text-center font-mono">
+                            </div>
+                            <div class="sm:col-span-2 md:col-span-3 lg:col-span-8">
+                                <button type="submit" class="btn-solid w-full py-2 text-xs">
+                                    افزودن ردیف به برنامه زمان‌بندی و محاسبه خودکار انحراف معیار
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- جدول برنامه زمان‌بندی با قابلیت ویرایش مستقیم اعداد در جدول -->
+                        <div class="pt-2">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <span class="text-xs font-bold text-ink">جدول برنامه زمان‌بندی و محاسبات آماری فعالیت‌ها (اعداد داخل کادرها مستقیماً قابل ویرایش هستند):</span>
+                                <span class="text-[11px] text-ink-muted">با تغییر هر عدد در جدول، نمودارها، SPI و انحراف معیار بلافاصله بروزرسانی می‌شوند</span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-right text-xs border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-canvas-border text-ink-muted panel-inset">
+                                            <th class="py-2.5 px-2.5">کد WBS</th>
+                                            <th class="py-2.5 px-2.5">پروژه</th>
+                                            <th class="py-2.5 px-2.5">شرح فعالیت</th>
+                                            <th class="py-2.5 px-2.5 text-center">شروع و پایان</th>
+                                            <th class="py-2.5 px-2.5 text-center">وزن (%)</th>
+                                            <th class="py-2.5 px-2.5 text-center">مدت برنامه‌ای (روز)</th>
+                                            <th class="py-2.5 px-2.5 text-center">مدت واقعی (روز)</th>
+                                            <th class="py-2.5 px-2.5 text-center">پیشرفت برنامه‌ای PV%</th>
+                                            <th class="py-2.5 px-2.5 text-center">پیشرفت واقعی EV%</th>
+                                            <th class="py-2.5 px-2.5 text-center">انحراف (SV%)</th>
+                                            <th class="py-2.5 px-2.5 text-center">شاخص SPI</th>
+                                            <th class="py-2.5 px-2.5 text-center">فاصله از میانگین (Z-Score)</th>
+                                            <th class="py-2.5 px-2.5 text-left">حذف</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="wbsScheduleTableBody" class="divide-y divide-canvas-border"></tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- نمودارهای ۶ گانه کارکرد -->
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                        <div class="lg:col-span-5 panel-card p-5">
-                            <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-xs font-bold text-ink">۱. سهم هر پروژه از کل زمان شرکت (ساعت و درصد)</h3>
-                                <span class="text-[10px] text-ink-faint">توزیع زمان پروژه‌ها</span>
-                            </div>
-                            <div class="h-64 relative"><canvas id="chartProjShare"></canvas></div>
-                        </div>
-
-                        <div class="lg:col-span-7 panel-card p-5">
-                            <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-xs font-bold text-ink">۲. مقایسه «زمان صرف‌شده واقعی» با «سقف بودجه زمانی» هر پروژه</h3>
-                                <span class="text-[10px] text-ink-faint">کنترل بودجه زمانی</span>
-                            </div>
-                            <div class="h-64 relative"><canvas id="chartProjBudget"></canvas></div>
-                        </div>
-                    </div>
-
+                    <!-- ۴ نمودار تخصصی کنترل پروژه (منحنی S، باند انحراف معیار، مقایسه WBS و مدت زمان) -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
                         <div class="panel-card p-5">
                             <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-xs font-bold text-ink">۳. مقایسه ساعات کارکرد پرسنل در دوره انتخابی</h3>
-                                <span class="text-[10px] text-ink-faint">عملکرد نفرات</span>
+                                <h3 class="text-xs font-bold text-ink">۱. نمودار منحنی S (S-Curve: پیشرفت تجمعی برنامه‌ای در برابر واقعی)</h3>
+                                <span class="text-[10px] text-ink-faint">تحلیل روند تجمعی پروژه</span>
                             </div>
-                            <div class="h-64 relative"><canvas id="chartStaffHours"></canvas></div>
+                            <div class="h-64 relative">
+                                <canvas id="chartPCSCurve"></canvas>
+                            </div>
                         </div>
 
                         <div class="panel-card p-5">
                             <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-xs font-bold text-ink">۴. زمان صرف‌شده به تفکیک نوع فعالیت تخصصی</h3>
-                                <span class="text-[10px] text-ink-faint">معماری، بخشنامه ۵۰۹۰، صورت‌وضعیت، مالی و...</span>
+                                <h3 class="text-xs font-bold text-ink">۲. نمودار انحراف فعالیت‌ها و باند انحراف معیار (μ ± 1σ)</h3>
+                                <span class="text-[10px] text-ink-faint">تشخیص فعالیت‌های بحرانی و خارج از نرم</span>
                             </div>
-                            <div class="h-64 relative"><canvas id="chartCategoryHours"></canvas></div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                        <div class="lg:col-span-5 panel-card p-5">
-                            <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-xs font-bold text-ink">۵. تفکیک زمان مصرفی واحدهای سازمانی (بخش‌ها)</h3>
-                                <span class="text-[10px] text-ink-faint">سهم بخش‌ها</span>
+                            <div class="h-64 relative">
+                                <canvas id="chartPCStdDevBand"></canvas>
                             </div>
-                            <div class="h-60 relative"><canvas id="chartDeptShare"></canvas></div>
                         </div>
 
-                        <div class="lg:col-span-7 panel-card p-5">
+                        <div class="panel-card p-5">
                             <div class="flex items-center justify-between mb-3">
-                                <h3 class="text-xs font-bold text-ink">۶. روند روزانه ثبت کارکرد در دوره زمانی (روز / ماه / سال)</h3>
-                                <span class="text-[10px] text-ink-faint">پایش خط زمانی</span>
+                                <h3 class="text-xs font-bold text-ink">۳. مقایسه پیشرفت برنامه‌ای (PV%) و پیشرفت واقعی (EV%) هر فعالیت</h3>
+                                <span class="text-[10px] text-ink-faint">به تفکیک کد WBS</span>
                             </div>
-                            <div class="h-60 relative"><canvas id="chartTimeline"></canvas></div>
+                            <div class="h-64 relative">
+                                <canvas id="chartPCWbsCompare"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="panel-card p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="text-xs font-bold text-ink">۴. مقایسه مدت زمان برنامه‌ای و واقعی فعالیت‌ها (بر حسب روز)</h3>
+                                <span class="text-[10px] text-ink-faint">تحلیل تأخیرات و انحراف زمانی</span>
+                            </div>
+                            <div class="h-64 relative">
+                                <canvas id="chartPCDurationCompare"></canvas>
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- ==================== بخش ۲ (کاملاً مستقل): برنامه زمان‌بندی، پیشرفت و انحراف معیار ==================== -->
-                <!-- قابل مشاهده و ویرایش فقط برای مدیر و کارمندانی که مدیر به آن‌ها دسترسی داده است -->
-                <section id="view-schedule" class="force-hidden space-y-6">
+                <!-- ==================== ۲. بخش‌های اختصاصی پنل مدیریت ارشد ==================== -->
+                <div id="adminWorkspace" class="force-hidden space-y-6">
 
-                    <!-- نوار مدیریت دسترسی کارمندان به بخش زمان‌بندی (فقط برای مدیر نمایش داده می‌شود) -->
-                    <div id="adminSchedulePermBox" class="force-hidden panel-card p-5 border-r-4 border-r-[#B68D40]">
-                        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-                            <div>
-                                <h3 class="text-sm font-bold text-ink">تعیین کارمندان مجاز جهت ورود و ویرایش اطلاعات «برنامه زمان‌بندی»</h3>
-                                <p class="text-[11px] text-ink-muted mt-0.5">با کلیک روی نام هر کارمند، مجوز دسترسی او به این بخش فعال یا غیرفعال می‌شود (تغییرات بلافاصله اعمال می‌گردد):</p>
+                    <!-- تب داشبورد و تحلیل زمان مصرفی پروژه‌ها -->
+                    <section id="tab-dashboard" class="space-y-6">
+
+                        <!-- پنل جامع فیلترهای پیشرفته و فیلتر دوره زمانی -->
+                        <div id="filterPanelCard" class="panel-card p-5 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-canvas-border">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="text-xs font-bold text-ink ml-2 flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-[#B68D40]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        <span>فیلتر دوره زمانی:</span>
+                                    </span>
+                                    <button type="button" onclick="setQuickPeriod('ALL')" id="prd-ALL" class="period-chip active">همه زمان‌ها</button>
+                                    <button type="button" onclick="setQuickPeriod('TODAY')" id="prd-TODAY" class="period-chip">امروز</button>
+                                    <button type="button" onclick="setQuickPeriod('WEEK')" id="prd-WEEK" class="period-chip">۷ روز اخیر</button>
+                                    <button type="button" onclick="setQuickPeriod('MONTH')" id="prd-MONTH" class="period-chip">ماه جاری</button>
+                                    <button type="button" onclick="setQuickPeriod('SEASON')" id="prd-SEASON" class="period-chip">فصل جاری (۳ ماه)</button>
+                                    <button type="button" onclick="setQuickPeriod('YEAR')" id="prd-YEAR" class="period-chip">سال جاری</button>
+                                </div>
+
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <div class="flex items-center gap-1.5">
+                                        <label class="text-[11px] font-semibold text-ink-muted">از تاریخ:</label>
+                                        <input type="text" id="fltDateFrom" oninput="onCustomDateInput()" dir="ltr" placeholder="01 / 07 / 1405" class="form-control w-32 text-center font-mono py-1 text-xs">
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <label class="text-[11px] font-semibold text-ink-muted">تا تاریخ:</label>
+                                        <input type="text" id="fltDateTo" oninput="onCustomDateInput()" dir="ltr" placeholder="30 / 07 / 1405" class="form-control w-32 text-center font-mono py-1 text-xs">
+                                    </div>
+                                </div>
                             </div>
-                            <span class="text-[11px] font-mono px-2.5 py-1 rounded panel-inset text-ink">سطح دسترسی: مدیر ارشد + کارشناسان مجاز</span>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3 items-end">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۱. واحد سازمانی (بخش)</label>
+                                    <select id="fltDept" onchange="refreshDashboard()" class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۲. پروژه</label>
+                                    <select id="fltProject" onchange="refreshDashboard()" class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۳. وضعیت پروژه</label>
+                                    <select id="fltProjStatus" onchange="refreshDashboard()" class="form-control w-full">
+                                        <option value="ALL">همه وضعیت‌ها</option>
+                                        <option value="active">فقط پروژه‌های در جریان</option>
+                                        <option value="completed">فقط پروژه‌های تکمیل‌شده</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۴. کارشناس / پرسنل</label>
+                                    <select id="fltUser" onchange="refreshDashboard()" class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۵. سمت سازمانی</label>
+                                    <select id="fltRole" onchange="refreshDashboard()" class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۶. نوع فعالیت تخصصی</label>
+                                    <select id="fltCategory" onchange="refreshDashboard()" class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۷. حداقل ساعت رکورد</label>
+                                    <select id="fltMinHours" onchange="refreshDashboard()" class="form-control w-full">
+                                        <option value="0">همه ساعات</option>
+                                        <option value="2">حداقل ۲ ساعت و بالاتر</option>
+                                        <option value="4">حداقل ۴ ساعت و بالاتر</option>
+                                        <option value="6">حداقل ۶ ساعت و بالاتر</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-ink-muted mb-1">۸. جستجو در توضیحات</label>
+                                    <input type="text" id="fltSearchText" oninput="refreshDashboard()" placeholder="مثال: ۵۰۹۰، پلان..." class="form-control w-full">
+                                </div>
+                            </div>
+
+                            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 text-[11px] text-ink-muted">
+                                <div id="activeFilterSummaryText" class="font-medium">در حال نمایش تمامی رکوردها</div>
+                                <button type="button" onclick="resetFilters()" class="btn-outline px-3 py-1 text-xs font-semibold">
+                                    پاک کردن تمام فیلترها (نمایش همه)
+                                </button>
+                            </div>
                         </div>
-                        <div id="scheduleAccessTogglesList" class="flex flex-wrap gap-2"></div>
+
+                        <!-- کارت‌های شاخص کلیدی (KPI) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="panel-card p-5 border-r-4 border-r-[#2A4359]">
+                                <div class="text-xs font-medium text-ink-muted">مجموع زمان صرف‌شده (در بازه انتخابی)</div>
+                                <div class="mt-2 flex items-baseline gap-1.5">
+                                    <span id="kpiTotalHours" class="text-2xl font-bold text-ink">0</span>
+                                    <span class="text-xs text-ink-muted">ساعت</span>
+                                </div>
+                                <div id="kpiBudgetRatio" class="mt-2 text-[11px] text-ink-faint">از مجموع بودجه زمانی پروژه‌ها</div>
+                            </div>
+
+                            <div class="panel-card p-5 border-r-4 border-r-[#B68D40]">
+                                <div class="text-xs font-medium text-ink-muted">پرمصرف‌ترین پروژه در این بازه</div>
+                                <div id="kpiTopProjectName" class="mt-2 text-sm font-bold text-ink truncate">-</div>
+                                <div id="kpiTopProjectStats" class="mt-2 text-[11px] font-semibold text-[#8C6520]">0 ساعت (0% از زمان)</div>
+                            </div>
+
+                            <div class="panel-card p-5 border-r-4 border-r-[#2E6F65]">
+                                <div class="text-xs font-medium text-ink-muted">میانگین زمان صرف‌شده در هر پروژه</div>
+                                <div class="mt-2 flex items-baseline gap-1.5">
+                                    <span id="kpiAvgProjHours" class="text-2xl font-bold text-ink">0</span>
+                                    <span class="text-xs text-ink-muted">ساعت / پروژه</span>
+                                </div>
+                                <div id="kpiActiveProjsNote" class="mt-2 text-[11px] text-ink-faint">در پروژه‌های فعال شرکت</div>
+                            </div>
+
+                            <div class="panel-card p-5 border-r-4 border-r-[#A84A3B]">
+                                <div class="text-xs font-medium text-ink-muted">پرسنل مشارکت‌کننده و تعداد ثبت</div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span id="kpiStaffCount" class="text-2xl font-bold text-ink">0</span>
+                                    <span class="text-xs text-ink-muted">نفر</span>
+                                    <span class="text-ink-faint">|</span>
+                                    <span id="kpiLogsCount" class="text-lg font-bold text-ink">0</span>
+                                    <span class="text-xs text-ink-muted">رکورد</span>
+                                </div>
+                                <div class="mt-2 text-[11px] text-ink-faint">بر اساس فیلترهای انتخابی</div>
+                            </div>
+                        </div>
+
+                        <!-- جدول تخصصی کالبدشکافی زمان هر پروژه -->
+                        <div class="panel-card p-5 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-canvas-border pb-3">
+                                <div>
+                                    <h3 class="text-sm font-bold text-ink">کالبدشکافی دقیق زمان مصرفی هر پروژه (سهم هر پروژه از کل زمان شرکت)</h3>
+                                    <p class="text-[11px] text-ink-muted mt-0.5">نشان می‌دهد هر پروژه در دوره زمانی و فیلتر انتخابی چه مقدار از وقت شرکت و بودجه زمانی خود را مصرف کرده است</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="switchMainView('projcontrol')" class="btn-solid px-3 py-1.5 text-xs">
+                                        ورود به جدول کنترل پروژه و انحراف معیار (WBS)
+                                    </button>
+                                    <button onclick="switchMainView('projects')" class="btn-outline px-3 py-1.5 text-xs">
+                                        مدیریت بودجه زمانی
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-right text-xs border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-canvas-border text-ink-muted panel-inset">
+                                            <th class="py-2.5 px-3">کد و نام پروژه</th>
+                                            <th class="py-2.5 px-3">واحد متولی</th>
+                                            <th class="py-2.5 px-3 text-center">وضعیت</th>
+                                            <th class="py-2.5 px-3 text-center">زمان صرف‌شده</th>
+                                            <th class="py-2.5 px-3 text-center">بودجه زمانی کل</th>
+                                            <th class="py-2.5 px-3 w-48">سهم از زمان دوره انتخابی (%)</th>
+                                            <th class="py-2.5 px-3 w-48">درصد مصرف بودجه پروژه</th>
+                                            <th class="py-2.5 px-3">نفرات درگیر در پروژه</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="projectTimeBreakdownBody" class="divide-y divide-canvas-border"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- نمودارهای داشبورد -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                            <div class="lg:col-span-5 panel-card p-5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-xs font-bold text-ink">۱. سهم هر پروژه از کل زمان شرکت (ساعت و درصد)</h3>
+                                    <span class="text-[10px] text-ink-faint">توزیع زمان پروژه‌ها</span>
+                                </div>
+                                <div class="h-64 relative">
+                                    <canvas id="chartProjShare"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-7 panel-card p-5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-xs font-bold text-ink">۲. مقایسه «زمان صرف‌شده واقعی» با «سقف بودجه زمانی» هر پروژه</h3>
+                                    <span class="text-[10px] text-ink-faint">کنترل بودجه زمانی</span>
+                                </div>
+                                <div class="h-64 relative">
+                                    <canvas id="chartProjBudget"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <div class="panel-card p-5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-xs font-bold text-ink">۳. مقایسه ساعات کارکرد پرسنل در دوره انتخابی</h3>
+                                    <span class="text-[10px] text-ink-faint">عملکرد نفرات</span>
+                                </div>
+                                <div class="h-64 relative">
+                                    <canvas id="chartStaffHours"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="panel-card p-5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-xs font-bold text-ink">۴. زمان صرف‌شده به تفکیک نوع فعالیت تخصصی</h3>
+                                    <span class="text-[10px] text-ink-faint">معماری، بخشنامه ۵۰۹۰، کنترل پروژه، مالی و...</span>
+                                </div>
+                                <div class="h-64 relative">
+                                    <canvas id="chartCategoryHours"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                            <div class="lg:col-span-5 panel-card p-5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-xs font-bold text-ink">۵. تفکیک زمان مصرفی واحدهای سازمانی (بخش‌ها)</h3>
+                                    <span class="text-[10px] text-ink-faint">سهم بخش‌ها</span>
+                                </div>
+                                <div class="h-60 relative">
+                                    <canvas id="chartDeptShare"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-7 panel-card p-5">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="text-xs font-bold text-ink">۶. روند روزانه ثبت کارکرد در دوره زمانی (روز / ماه / سال)</h3>
+                                    <span class="text-[10px] text-ink-faint">پایش خط زمانی</span>
+                                </div>
+                                <div class="h-60 relative">
+                                    <canvas id="chartTimeline"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- تب مدیریت پروژه‌ها، بودجه زمانی، بخش‌ها و خدمات -->
+                    <section id="tab-projects" class="force-hidden space-y-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                            <div class="lg:col-span-8 panel-card p-5 space-y-4">
+                                <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">تعریف پروژه جدید و تعیین سقف بودجه زمانی (ساعت برآوردی)</h3>
+                                <form onsubmit="addProject(event)" class="grid grid-cols-1 sm:grid-cols-5 gap-3 panel-inset p-3.5">
+                                    <div>
+                                        <label class="block text-[11px] text-ink-muted mb-1">کد پروژه</label>
+                                        <input type="text" id="newProjCode" required dir="ltr" placeholder="PP-106" class="form-control w-full text-left font-mono">
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label class="block text-[11px] text-ink-muted mb-1">نام پروژه</label>
+                                        <input type="text" id="newProjName" required placeholder="مثال: طراحی فاز ۲ مجتمع اداری پارس" class="form-control w-full">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-ink-muted mb-1">بخش متولی</label>
+                                        <select id="newProjDept" class="form-control w-full"></select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-ink-muted mb-1">بودجه زمانی (ساعت)</label>
+                                        <input type="number" id="newProjBudget" required min="1" value="120" class="form-control w-full text-center font-mono">
+                                    </div>
+                                    <div class="sm:col-span-5">
+                                        <button type="submit" class="btn-solid w-full py-2 text-xs">ثبت پروژه جدید در سامانه</button>
+                                    </div>
+                                </form>
+
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-right text-xs border-collapse">
+                                        <thead>
+                                            <tr class="border-b border-canvas-border text-ink-muted panel-inset">
+                                                <th class="py-2.5 px-3">کد</th>
+                                                <th class="py-2.5 px-3">نام پروژه</th>
+                                                <th class="py-2.5 px-3">بخش</th>
+                                                <th class="py-2.5 px-3 text-center">وضعیت</th>
+                                                <th class="py-2.5 px-3 text-center">ساعت صرف‌شده</th>
+                                                <th class="py-2.5 px-3 text-center">بودجه زمانی</th>
+                                                <th class="py-2.5 px-3 text-left">عملیات مدیریت</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="projectsManageTable" class="divide-y divide-canvas-border"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-4 panel-card p-5 space-y-4">
+                                <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">بخش‌های شرکت (افزودن بخش جدید)</h3>
+                                <form onsubmit="addDepartment(event)" class="space-y-3 panel-inset p-3.5">
+                                    <div>
+                                        <label class="block text-[11px] text-ink-muted mb-1">نام بخش جدید</label>
+                                        <input type="text" id="newDeptName" required placeholder="مثال: بخش سازه / بخش نظارت" class="form-control w-full">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] text-ink-muted mb-1">توضیح حوزه فعالیت</label>
+                                        <input type="text" id="newDeptDesc" placeholder="مثال: محاسبات سازه و دفتر فنی" class="form-control w-full">
+                                    </div>
+                                    <button type="submit" class="btn-solid w-full py-2 text-xs">افزودن بخش جدید</button>
+                                </form>
+                                <div id="deptsManageList" class="space-y-2 max-h-80 overflow-y-auto"></div>
+                            </div>
+                        </div>
+
+                        <div class="panel-card p-5 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-canvas-border pb-3">
+                                <div>
+                                    <h3 class="text-sm font-bold text-ink">فهرست خدمات و فعالیت‌های تخصصی</h3>
+                                    <p class="text-[11px] text-ink-muted">پرسنل هنگام ثبت کارکرد روزانه، نوع فعالیت خود را از این لیست انتخاب می‌کنند.</p>
+                                </div>
+                                <form onsubmit="addTaskCategory(event)" class="flex items-center gap-2">
+                                    <input type="text" id="newCatInput" required placeholder="عنوان خدمت تخصصی جدید..." class="form-control text-xs py-1.5 w-60">
+                                    <button type="submit" class="btn-solid px-4 py-1.5 text-xs">افزودن خدمت</button>
+                                </form>
+                            </div>
+                            <div id="categoriesList" class="flex flex-wrap gap-2"></div>
+                        </div>
+                    </section>
+
+                    <!-- تب مدیریت پرسنل، تعیین سمت سازمانی و اعطای دسترسی کنترل پروژه -->
+                    <section id="tab-users" class="force-hidden space-y-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                            <div class="lg:col-span-4 panel-card p-5 space-y-4">
+                                <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">تعریف کارمند جدید و تعیین دسترسی کنترل پروژه</h3>
+                                <form onsubmit="addEmployee(event)" class="space-y-3.5">
+                                    <div>
+                                        <label class="block text-xs text-ink-muted mb-1">نام و نام خانوادگی کارمند</label>
+                                        <input type="text" id="empFullName" required placeholder="مثال: مهندس امیرحسین کریمی" class="form-control w-full">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-ink-muted mb-1">واحد سازمانی (بخش)</label>
+                                        <select id="empDeptSelect" required class="form-control w-full"></select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-ink-muted mb-1">تعیین سمت سازمانی (انتخاب یا تایپ دلخواه)</label>
+                                        <input type="text" id="empRoleTitle" list="rolesDataList" required placeholder="مثال: کارشناس ارشد کنترل پروژه" class="form-control w-full">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-ink-muted mb-1">ساعت موظفی هدف در ماه</label>
+                                        <input type="number" id="empTargetHours" required value="176" min="10" max="350" class="form-control w-full text-center font-mono">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2.5">
+                                        <div>
+                                            <label class="block text-xs text-ink-muted mb-1">نام کاربری ورود</label>
+                                            <input type="text" id="empUsername" required dir="ltr" placeholder="karimi" class="form-control w-full text-left font-mono">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-ink-muted mb-1">رمز عبور</label>
+                                            <input type="text" id="empPassword" required dir="ltr" placeholder="1234" class="form-control w-full text-left font-mono">
+                                        </div>
+                                    </div>
+                                    <div class="panel-inset p-3">
+                                        <label class="flex items-center gap-2 text-xs font-bold text-ink cursor-pointer">
+                                            <input type="checkbox" id="empCanAccessPC" class="w-4 h-4 accent-[#B68D40]">
+                                            <span>دارای دسترسی به «واحد کنترل پروژه و برنامه زمان‌بندی»</span>
+                                        </label>
+                                    </div>
+                                    <button type="submit" class="btn-solid w-full py-2.5 text-xs">ایجاد حساب کاربری کارمند</button>
+                                </form>
+                            </div>
+
+                            <div class="lg:col-span-8 panel-card p-5 space-y-4">
+                                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-canvas-border pb-3">
+                                    <div>
+                                        <h3 class="text-sm font-bold text-ink">فهرست پرسنل، سمت‌های سازمانی و مجوز دسترسی کنترل پروژه</h3>
+                                        <p class="text-[11px] text-ink-muted mt-0.5">با کلیک روی دکمه ستون «دسترسی کنترل پروژه» می‌توانید مجوز ورود کارمند به جدول زمان‌بندی را فعال یا غیرفعال کنید.</p>
+                                    </div>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-right text-xs border-collapse">
+                                        <thead>
+                                            <tr class="border-b border-canvas-border text-ink-muted panel-inset">
+                                                <th class="py-2.5 px-3">نام کارمند</th>
+                                                <th class="py-2.5 px-3">سمت سازمانی</th>
+                                                <th class="py-2.5 px-3">بخش</th>
+                                                <th class="py-2.5 px-3">نام کاربری / رمز</th>
+                                                <th class="py-2.5 px-3 text-center">دسترسی کنترل پروژه</th>
+                                                <th class="py-2.5 px-3 text-center">کارکرد / هدف</th>
+                                                <th class="py-2.5 px-3 text-left">مدیریت</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="employeesTableBody" class="divide-y divide-canvas-border"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- تب لوح جامع کارکرد کل شرکت -->
+                    <section id="tab-logs" class="force-hidden space-y-6">
+                        <div class="panel-card p-5">
+                            <h3 class="text-sm font-bold text-ink mb-3">ثبت کارکرد مستقیم توسط مدیر</h3>
+                            <form onsubmit="adminAddWorklog(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+                                <div>
+                                    <label class="block text-[11px] text-ink-muted mb-1">انتخاب کارشناس</label>
+                                    <select id="admLogUser" required class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-ink-muted mb-1">پروژه</label>
+                                    <select id="admLogProject" required class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-ink-muted mb-1">نوع فعالیت تخصصی</label>
+                                    <select id="admLogCategory" required class="form-control w-full"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-ink-muted mb-1">تاریخ (روز / ماه / سال)</label>
+                                    <input type="text" id="admLogDate" required dir="ltr" class="form-control w-full text-center font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-ink-muted mb-1">مدت زمان (نیم‌ساعته)</label>
+                                    <select id="admLogHours" required class="form-control w-full hour-select"></select>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn-solid w-full py-2 text-xs">ثبت کارکرد</button>
+                                </div>
+                                <div class="sm:col-span-2 lg:col-span-6">
+                                    <input type="text" id="admLogDesc" placeholder="شرح دقیق اقدامات انجام‌شده..." class="form-control w-full">
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="panel-card p-5 space-y-4">
+                            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-canvas-border pb-3">
+                                <h3 class="text-sm font-bold text-ink">جدول جامع تمامی کارکردهای ثبت‌شده در شرکت</h3>
+                                <input type="text" id="searchLogsInput" oninput="renderAdminLogsTable()" placeholder="جستجو در نام کارمند، سمت، پروژه، تاریخ یا شرح..." class="form-control text-xs py-1.5 w-72">
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-right text-xs border-collapse">
+                                    <thead>
+                                        <tr class="border-b border-canvas-border text-ink-muted panel-inset">
+                                            <th class="py-2.5 px-3">تاریخ (روز/ماه/سال)</th>
+                                            <th class="py-2.5 px-3">نام کارشناس و سمت</th>
+                                            <th class="py-2.5 px-3">بخش</th>
+                                            <th class="py-2.5 px-3">پروژه</th>
+                                            <th class="py-2.5 px-3">فعالیت</th>
+                                            <th class="py-2.5 px-3 text-center">ساعت</th>
+                                            <th class="py-2.5 px-3">توضیحات</th>
+                                            <th class="py-2.5 px-3 text-left">حذف</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminLogsTableBody" class="divide-y divide-canvas-border"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- تب تنظیمات پیشرفته مدیریت -->
+                    <section id="tab-settings" class="force-hidden space-y-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                            <div class="lg:col-span-7 panel-card p-6 space-y-5">
+                                <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">تنظیمات کنترلی مدیر، قوانین ثبت کارکرد و اطلاعیه سازمانی</h3>
+
+                                <form onsubmit="saveManagerAdvancedSettings(event)" class="space-y-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-ink-muted mb-1">نام رسمی شرکت در سامانه</label>
+                                            <input type="text" id="cfgCompanyName" required class="form-control w-full">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-ink-muted mb-1">زیرعنوان هدر صفحه ورود</label>
+                                            <input type="text" id="cfgCompanySub" required class="form-control w-full">
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-ink-muted mb-1">سقف مجاز ثبت کارکرد روزانه هر کارمند (ساعت)</label>
+                                            <input type="number" id="cfgMaxDailyHours" min="1" max="24" step="0.5" required class="form-control w-full text-center font-mono">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-ink-muted mb-1">ساعت موظفی استاندارد ماهانه پیش‌فرض</label>
+                                            <input type="number" id="cfgDefaultMonthlyTarget" min="10" max="350" required class="form-control w-full text-center font-mono">
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 panel-inset p-3.5">
+                                        <label class="flex items-center gap-2.5 text-xs cursor-pointer">
+                                            <input type="checkbox" id="cfgAllowEmpDelete" class="w-4 h-4 accent-[#1B222C]">
+                                            <span>اجازه حذف کارکرد ثبت‌شده توسط خود کارمند</span>
+                                        </label>
+                                        <label class="flex items-center gap-2.5 text-xs cursor-pointer">
+                                            <input type="checkbox" id="cfgRequireDesc" class="w-4 h-4 accent-[#1B222C]">
+                                            <span>الزامی بودن نوشتن توضیحات هنگام ثبت کارکرد</span>
+                                        </label>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-ink-muted mb-1">متن اطلاعیه مدیریت (نمایش در بالای پنل تمامی کارمندان)</label>
+                                        <input type="text" id="cfgAnnouncement" placeholder="در صورت خالی بودن، بنر اطلاعیه نمایش داده نمی‌شود..." class="form-control w-full">
+                                    </div>
+
+                                    <button type="submit" class="btn-solid px-5 py-2.5 text-xs">ذخیره قوانین و تنظیمات مدیریتی</button>
+                                </form>
+
+                                <div class="pt-4 border-t border-canvas-border space-y-3">
+                                    <div class="flex flex-wrap items-center justify-between gap-2">
+                                        <div>
+                                            <div class="text-xs font-bold text-ink">بانک سمت‌های سازمانی شرکت</div>
+                                            <p class="text-[11px] text-ink-muted">سمت‌های پیش‌فرضی که هنگام تعریف یا ویرایش کارمند قابل انتخاب هستند:</p>
+                                        </div>
+                                        <form onsubmit="addRolePreset(event)" class="flex gap-1.5">
+                                            <input type="text" id="newRolePresetInput" required placeholder="سمت جدید..." class="form-control text-xs py-1 w-48">
+                                            <button type="submit" class="btn-solid px-3 py-1 text-xs">افزودن سمت</button>
+                                        </form>
+                                    </div>
+                                    <div id="rolePresetsContainer" class="flex flex-wrap gap-1.5"></div>
+                                </div>
+                            </div>
+
+                            <div class="lg:col-span-5 space-y-6">
+                                <div class="panel-card p-6 space-y-4">
+                                    <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">نماد شرکت و رمز عبور مدیر ارشد</h3>
+                                    
+                                    <div class="flex items-center gap-4 panel-inset p-3.5">
+                                        <div class="w-20 h-20 rounded-lg bg-[#EAE6DF] border border-[#B68D40] p-2 flex items-center justify-center shrink-0">
+                                            <img class="company-logo-img w-full h-full object-contain" alt="نماد پارس پرنون" src="">
+                                        </div>
+                                        <div class="space-y-2">
+                                            <div class="text-xs font-bold text-ink">نماد مهندسان مشاور پارس پرنون</div>
+                                            <div class="flex flex-wrap gap-1.5">
+                                                <label class="btn-solid px-3 py-1.5 text-[11px] cursor-pointer">
+                                                    <span>آپلود تصویر لوگو</span>
+                                                    <input type="file" accept="image/*" class="hidden" onchange="uploadCustomLogo(event)">
+                                                </label>
+                                                <button onclick="resetToDefaultLogo()" class="btn-outline px-2.5 py-1.5 text-[11px]">نماد پیش‌فرض</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <form onsubmit="updateAdminCredentials(event)" class="space-y-3 pt-2">
+                                        <div class="text-xs font-bold text-ink">تغییر نام کاربری و رمز ورود مدیر</div>
+                                        <div class="grid grid-cols-2 gap-2.5">
+                                            <div>
+                                                <label class="block text-[11px] text-ink-muted mb-1">نام کاربری مدیر</label>
+                                                <input type="text" id="setAdminUser" required dir="ltr" class="form-control w-full text-left font-mono">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[11px] text-ink-muted mb-1">رمز عبور مدیر</label>
+                                                <input type="text" id="setAdminPass" required dir="ltr" class="form-control w-full text-left font-mono">
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn-outline w-full py-2 text-xs">بروزرسانی اطلاعات ورود مدیر</button>
+                                    </form>
+                                </div>
+
+                                <div class="panel-card p-6 space-y-4">
+                                    <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">مدیریت داده‌ها و پشتیبان‌گیری اطلاعات شرکت</h3>
+                                    <button onclick="exportCSV()" class="btn-accent w-full py-2.5 text-xs">
+                                        دریافت فایل اکسل جامع کارکردها (CSV)
+                                    </button>
+                                    <div class="grid grid-cols-2 gap-2 pt-1">
+                                        <button onclick="exportFullBackupJSON()" class="btn-outline py-2 text-xs">دانلود پشتیبان دیتابیس (JSON)</button>
+                                        <label class="btn-outline py-2 text-xs text-center cursor-pointer">
+                                            <span>بازیابی فایل پشتیبان</span>
+                                            <input type="file" accept=".json" class="hidden" onchange="importFullBackupJSON(event)">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </section>
+                </div>
+
+                <!-- ==================== ۳. پنل ثبت کارکرد روزانه کارمندان ==================== -->
+                <div id="employeeWorkspace" class="force-hidden space-y-6">
+
+                    <!-- بنر دسترسی سریع به کنترل پروژه (فقط برای کارمندان مجاز نمایش داده می‌شود) -->
+                    <div id="empQuickPCBanner" class="force-hidden panel-card p-4 border-r-4 border-r-[#B68D40] flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <div class="text-xs font-bold text-ink">شما دارای مجوز دسترسی به «واحد کنترل پروژه و برنامه زمان‌بندی (WBS)» هستید</div>
+                            <p class="text-[11px] text-ink-muted mt-0.5">جهت ورود اطلاعات برنامه زمان‌بندی و مشاهده خودکار نمودارهای انحراف معیار و منحنی S کلیک کنید.</p>
+                        </div>
+                        <button onclick="switchEmployeeView('projcontrol')" class="btn-accent px-4 py-2 text-xs">
+                            ورود به بخش کنترل پروژه و زمان‌بندی
+                        </button>
                     </div>
 
-                    <!-- کارت‌های شاخص آماری کنترل پروژه و انحراف معیار (Standard Deviation & Progress KPIs) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                        <div class="panel-card p-4 border-r-4 border-r-[#2A4359]">
-                            <div class="text-[11px] font-medium text-ink-muted">پیشرفت وزنی کل (برنامه‌ای / واقعی)</div>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <div class="panel-card p-5 border-r-4 border-r-[#2A4359]">
+                            <div class="text-xs text-ink-muted">مجموع ساعات ثبت‌شده شما</div>
                             <div class="mt-2 flex items-baseline gap-1.5">
-                                <span id="schKpiActualWeighted" class="text-2xl font-bold text-ink">0%</span>
-                                <span class="text-xs text-ink-muted">واقعی</span>
-                                <span class="text-ink-faint">|</span>
-                                <span id="schKpiPlannedWeighted" class="text-sm font-bold text-ink-muted">0%</span>
-                                <span class="text-[11px] text-ink-faint">برنامه</span>
+                                <span id="empTotalHours" class="text-2xl font-bold text-ink">0</span>
+                                <span class="text-xs text-ink-faint">ساعت</span>
                             </div>
-                            <div id="schKpiOverallVariance" class="mt-2 text-[11px] font-semibold">انحراف کل: 0%</div>
                         </div>
-
-                        <div class="panel-card p-4 border-r-4 border-r-[#B68D40]">
-                            <div class="text-[11px] font-medium text-ink-muted">انحراف معیار انحرافات برنامه ($\sigma$)</div>
+                        <div class="panel-card p-5 border-r-4 border-r-[#B68D40]">
+                            <div class="text-xs text-ink-muted">درصد تحقق ساعت موظفی ماهانه</div>
                             <div class="mt-2 flex items-baseline gap-1.5">
-                                <span id="schKpiStdDevVariance" class="text-2xl font-bold text-ink ltr-num">0.00</span>
-                                <span class="text-xs text-ink-muted">واحد استاندارد</span>
+                                <span id="empTargetPercent" class="text-2xl font-bold text-ink">0%</span>
+                                <span id="empTargetSub" class="text-xs text-ink-faint">از 176 ساعت</span>
                             </div>
-                            <div id="schKpiMeanVariance" class="mt-2 text-[11px] text-ink-faint">میانگین انحراف ($\mu$): 0%</div>
                         </div>
-
-                        <div class="panel-card p-4 border-r-4 border-r-[#2E6F65]">
-                            <div class="text-[11px] font-medium text-ink-muted">انحراف معیار پیشرفت فیزیکی ($\sigma_{AP}$)</div>
+                        <div class="panel-card p-5 border-r-4 border-r-[#2E6F65]">
+                            <div class="text-xs text-ink-muted">تعداد پروژه‌های کارشده شما</div>
                             <div class="mt-2 flex items-baseline gap-1.5">
-                                <span id="schKpiStdDevProgress" class="text-2xl font-bold text-ink ltr-num">0.00%</span>
+                                <span id="empProjectsCount" class="text-2xl font-bold text-ink">0</span>
+                                <span class="text-xs text-ink-faint">پروژه</span>
                             </div>
-                            <div id="schKpiRangeBand" class="mt-2 text-[11px] text-ink-faint">باند نرمال ($\mu \pm \sigma$): -</div>
                         </div>
-
-                        <div class="panel-card p-4 border-r-4 border-r-[#5E503F]">
-                            <div class="text-[11px] font-medium text-ink-muted">شاخص کل عملکرد زمانی ($SPI$)</div>
+                        <div class="panel-card p-5 border-r-4 border-r-[#A84A3B]">
+                            <div class="text-xs text-ink-muted">تعداد کل گزارش‌های ثبت‌شده</div>
                             <div class="mt-2 flex items-baseline gap-1.5">
-                                <span id="schKpiTotalSPI" class="text-2xl font-bold text-ink ltr-num">1.00</span>
-                                <span id="schKpiSPIStatus" class="text-[11px] font-bold px-2 py-0.5 rounded">نرمال</span>
+                                <span id="empTotalLogs" class="text-2xl font-bold text-ink">0</span>
+                                <span class="text-xs text-ink-faint">رکورد</span>
                             </div>
-                            <div class="mt-2 text-[11px] text-ink-faint">فرمول: پیشرفت واقعی ÷ پیشرفت برنامه‌ای</div>
-                        </div>
-
-                        <div class="panel-card p-4 border-r-4 border-r-[#A84A3B]">
-                            <div class="text-[11px] font-medium text-ink-muted">تعداد پروژه‌های زمان‌بندی و تأخیرات</div>
-                            <div class="mt-2 flex items-baseline gap-2">
-                                <span id="schKpiProjectsCount" class="text-2xl font-bold text-ink">0</span>
-                                <span class="text-xs text-ink-muted">پروژه</span>
-                                <span class="text-ink-faint">|</span>
-                                <span id="schKpiAvgDelay" class="text-sm font-bold text-[#A84A3B]">0 روز</span>
-                            </div>
-                            <div id="schKpiOutliersCount" class="mt-2 text-[11px] text-ink-faint">خارج از باند انحراف معیار: 0 پروژه</div>
                         </div>
                     </div>
 
-                    <!-- فرم افزودن پروژه جدید به برنامه زمان‌بندی (تعداد نامحدود و کاملاً انعطاف‌پذیر) -->
-                    <div class="panel-card p-5 space-y-4">
-                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-canvas-border pb-3">
-                            <div>
-                                <h3 class="text-sm font-bold text-ink">افزودن پروژه یا فاز جدید به برنامه زمان‌بندی (ظرفیت نامحدود پروژه)</h3>
-                                <p class="text-[11px] text-ink-muted mt-0.5">می‌توانید از پروژه‌های موجود شرکت انتخاب کنید یا هر تعداد پروژه جدید را مستقیماً وارد نمایید.</p>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <select id="quickFillProjectSelect" onchange="quickFillFromCompanyProject()" class="form-control text-xs py-1">
-                                    <option value="">-- انتخاب سریع از پروژه‌های شرکت (اختیاری) --</option>
-                                </select>
-                            </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <div class="lg:col-span-5 panel-card p-6 space-y-4">
+                            <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">ثبت گزارش کارکرد روزانه</h3>
+                            <form onsubmit="employeeAddWorklog(event)" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-ink-muted mb-1.5">انتخاب پروژه (پروژه‌های فعال)</label>
+                                    <select id="empFormProject" required class="form-control w-full"></select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-ink-muted mb-1.5">نوع فعالیت تخصصی</label>
+                                    <select id="empFormCategory" required class="form-control w-full"></select>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-ink-muted mb-1.5">تاریخ (روز / ماه / سال)</label>
+                                        <input type="text" id="empFormDate" required dir="ltr" class="form-control w-full text-center font-mono">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-ink-muted mb-1.5">مدت زمان (نیم‌ساعته)</label>
+                                        <select id="empFormHours" required class="form-control w-full hour-select"></select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-semibold text-ink-muted mb-1.5">شرح اقدامات انجام‌شده در پروژه</label>
+                                    <textarea id="empFormDesc" rows="3" placeholder="توضیح فعالیت انجام‌شده..." class="form-control w-full"></textarea>
+                                </div>
+
+                                <button type="submit" class="btn-solid w-full py-2.5 text-xs">
+                                    ثبت در کارنامه کارکرد
+                                </button>
+                            </form>
                         </div>
 
-                        <form onsubmit="addScheduleItem(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-3 items-end panel-inset p-4">
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">کد پروژه / فاز</label>
-                                <input type="text" id="schNewCode" required dir="ltr" placeholder="PP-108" class="form-control w-full text-left font-mono">
+                        <div class="lg:col-span-7 space-y-6">
+                            <div class="panel-card p-5 space-y-3">
+                                <h3 class="text-xs font-bold text-ink">تفکیک زمان صرف‌شده شما در هر پروژه</h3>
+                                <div id="empProjectBreakdownBars" class="space-y-2.5"></div>
                             </div>
-                            <div class="lg:col-span-2">
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">عنوان پروژه / بسته کاری زمان‌بندی</label>
-                                <input type="text" id="schNewName" required placeholder="مثال: طراحی فاز ۲ و نقشه‌های اجرایی..." class="form-control w-full">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">بخش مربوطه</label>
-                                <select id="schNewDept" class="form-control w-full"></select>
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">شروع (روز/ماه/سال)</label>
-                                <input type="text" id="schNewStart" required dir="ltr" placeholder="01 / 07 / 1405" class="form-control w-full text-center font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">پایان (روز/ماه/سال)</label>
-                                <input type="text" id="schNewEnd" required dir="ltr" placeholder="30 / 11 / 1405" class="form-control w-full text-center font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">وزن اهمیت (1-100)</label>
-                                <input type="number" id="schNewWeight" required min="1" max="100" step="0.5" value="15" class="form-control w-full text-center font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">پیشرفت برنامه‌ای (%)</label>
-                                <input type="number" id="schNewPlanned" required min="0" max="100" step="0.5" value="50" class="form-control w-full text-center font-mono">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">پیشرفت واقعی (%)</label>
-                                <input type="number" id="schNewActual" required min="0" max="100" step="0.5" value="45" class="form-control w-full text-center font-mono">
-                            </div>
-                            <div class="lg:col-span-2">
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">تأخیر(+) یا تعجیل(-) به روز</label>
-                                <input type="number" id="schNewDelay" required step="1" value="5" class="form-control w-full text-center font-mono">
-                            </div>
-                            <div class="lg:col-span-5">
-                                <label class="block text-[11px] font-semibold text-ink-muted mb-1">توضیحات فنی کنترل پروژه / علت انحراف زمان‌بندی</label>
-                                <input type="text" id="schNewNotes" placeholder="مثال: در انتظار ابلاغ مصوبه کارفرما / بررسی لایحه تاخیرات..." class="form-control w-full">
-                            </div>
-                            <div class="lg:col-span-2">
-                                <button type="submit" class="btn-solid w-full py-2 text-xs">افزودن به برنامه زمان‌بندی</button>
-                            </div>
-                        </form>
-                    </div>
 
-                    <!-- نمودارهای ۴ گانه تخصصی برنامه زمان‌بندی، پیشرفت و انحراف معیار -->
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                        <div class="lg:col-span-7 panel-card p-5">
-                            <div class="flex items-center justify-between mb-3">
+                            <div class="panel-card p-5 space-y-4">
+                                <h3 class="text-sm font-bold text-ink border-b border-canvas-border pb-3">سوابق کارکردهای ثبت‌شده شما</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-right text-xs border-collapse">
+                                        <thead>
+                                            <tr class="border-b border-canvas-border text-ink-muted panel-inset">
+                                                <th class="py-2.5 px-3">تاریخ (روز/ماه/سال)</th>
+                                                <th class="py-2.5 px-3">پروژه</th>
+                                                <th class="py-2.5 px-3">فعالیت</th>
+                                                <th class="py-2.5 px-3 text-center">ساعت</th>
+                                                <th class="py-2.5 px-3">توضیحات</th>
+                                                <th class="py-2.5 px-3 text-left">عملیات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="empLogsTableBody" class="divide-y divide-canvas-border"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== منطق، محاسبات آماری کنترل پروژه و دیتابیس ==================== -->
+    <script>
+        function setElementVisibility(id, isVisible, displayMode = 'block') {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (isVisible) {
+                el.classList.remove('force-hidden', 'hidden');
+                el.style.display = displayMode;
+            } else {
+                el.classList.add('force-hidden');
+                el.style.display = 'none';
+            }
+        }
+
+        // ۱. نماد رسمی مهندسان مشاور پارس پرنون
+        const PARS_PARNOUN_OFFICIAL_LOGO = "data:image/svg+xml;utf8," + encodeURIComponent(`
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 260" width="100%" height="100%">
+            <rect width="260" height="260" fill="#EAE6DF"/>
+            <path d="M 188 18 L 240 18 L 240 112" fill="none" stroke="#141414" stroke-width="6.5" stroke-linecap="square"/>
+            <path d="M 188 27 L 231 27 L 231 112" fill="none" stroke="#141414" stroke-width="2" stroke-linecap="square"/>
+            <path d="M 24 106 L 24 205 L 62 205" fill="none" stroke="#141414" stroke-width="6.5" stroke-linecap="square"/>
+            <path d="M 33 106 L 33 196 L 62 196" fill="none" stroke="#141414" stroke-width="2" stroke-linecap="square"/>
+            <path d="M 240 128 L 240 205 L 185 205" fill="none" stroke="#141414" stroke-width="6.5" stroke-linecap="square"/>
+            <path d="M 231 128 L 231 196 L 185 196" fill="none" stroke="#141414" stroke-width="2" stroke-linecap="square"/>
+            <path d="M 46 84 C 75 112, 165 92, 198 22 C 175 72, 92 94, 54 74 Z" fill="#141414"/>
+            <polygon points="131,33 141,42 131,51 121,42" fill="#141414"/>
+            <path d="M 218 82 C 194 82, 182 108, 174 134 C 152 178, 114 202, 74 204 C 118 208, 164 188, 186 142 C 193 118, 202 95, 218 92 Z" fill="#141414"/>
+            <path d="M 208 112 C 204 138, 204 155, 214 158 C 221 159, 224 148, 221 142 C 216 146, 212 142, 214 112 Z" fill="#141414"/>
+            <polygon points="205,168 211,174 205,180 199,174" fill="#141414"/>
+            <polygon points="217,168 223,174 217,180 211,174" fill="#141414"/>
+            <polygon points="211,178 217,184 211,190 205,184" fill="#141414"/>
+            <path d="M 142 96 C 142 112, 128 118, 118 112 C 114 108, 120 98, 128 100 C 134 102, 134 114, 116 126 C 136 124, 148 112, 148 96 Z" fill="#141414"/>
+            <path d="M 162 114 C 154 128, 144 136, 132 140 C 146 142, 158 134, 166 118 Z" fill="#141414"/>
+            <polygon points="129,149 134,154 129,159 124,154" fill="#141414"/>
+            <polygon points="140,149 145,154 140,159 135,154" fill="#141414"/>
+            <polygon points="134,158 139,163 134,168 129,163" fill="#141414"/>
+            <text x="130" y="242" text-anchor="middle" fill="#141414" font-family="'B Nazanin', 'Vazirmatn', Tahoma, serif" font-size="31" font-weight="bold">مهندسان مشاور</text>
+        </svg>`);
+
+        // ۲. دیتابیس اولیه شامل «بخش کنترل پروژه» و برنامه زمان‌بندی نمونه (WBS)
+        const INITIAL_DATABASE = {
+            companyName: "مهندسان مشاور پارس پرنون",
+            companySub: "سامانه کنترل پروژه (WBS & EVM)، مدیریت واحدهای فنی و ثبت کارکرد پرسنل",
+            logoDataUrl: PARS_PARNOUN_OFFICIAL_LOGO,
+            theme: "default",
+            settings: {
+                maxDailyHours: 14,
+                defaultMonthlyTarget: 176,
+                allowEmpDelete: true,
+                requireDesc: true,
+                announcement: "همکاران گرامی، لطفاً ساعات کارکرد روزانه و وضعیت پیشرفت برنامه زمان‌بندی پروژه‌ها را با فرمت تاریخ روز / ماه / سال ثبت فرمایید."
+            },
+            admin: {
+                username: "parsparnoun",
+                password: "parsparnoun123",
+                name: "مدیریت ارشد پارس پرنون"
+            },
+            rolePresets: [
+                "مدیر پروژه",
+                "سرپرست کنترل پروژه و برنامه‌ریزی",
+                "کارشناس ارشد کنترل پروژه",
+                "سرپرست بخش معماری",
+                "کارشناس ارشد معماری",
+                "کارشناس طراحی و معماری (فاز ۱ و ۲)",
+                "سرپرست امور پیمان و رسیدگی",
+                "کارشناس ارشد امور پیمان و رسیدگی",
+                "کارشناس متره، برآورد و صورت‌وضعیت",
+                "مدیر امور مالی",
+                "کارشناس ارشد مالی و حسابداری"
+            ],
+            departments: [
+                { id: "dept_arch", name: "بخش معماری", desc: "طراحی فاز ۱ و ۲، نقشه‌های اجرایی، نما و دکوراسیون" },
+                { id: "dept_contract", name: "بخش امور پیمان و رسیدگی", desc: "متره و برآورد، صورت‌وضعیت‌ها، تعدیل و لایحه تاخیرات (بخشنامه ۵۰۹۰)" },
+                { id: "dept_fin", name: "بخش مالی", desc: "حسابداری پروژه‌ها، اسناد مالی، تنخواه و صورت‌های مالی" },
+                { id: "dept_pc", name: "بخش کنترل پروژه", desc: "برنامه‌ریزی زمان‌بندی (WBS)، منحنی S، محاسبه انحراف معیار و شاخص‌های EVM" }
+            ],
+            projects: [
+                { code: "PP-101", name: "مجتمع اداری و تجاری پارس", deptId: "dept_arch", budgetHours: 120, status: "active" },
+                { code: "PP-102", name: "طرح توسعه و محوطه‌سازی مجموعه پرنون", deptId: "dept_arch", budgetHours: 80, status: "active" },
+                { code: "PP-201", name: "رسیدگی پیمان و لایحه تاخیرات پروژه نگین (بخشنامه ۵۰۹۰)", deptId: "dept_contract", budgetHours: 100, status: "active" },
+                { code: "PP-202", name: "متره و صورت‌وضعیت قطعی مجتمع مسکونی سپهر", deptId: "dept_contract", budgetHours: 90, status: "active" },
+                { code: "PP-301", name: "حسابرسی، تراز مالی و بودجه‌بندی سالانه شرکت", deptId: "dept_fin", budgetHours: 60, status: "active" }
+            ],
+            categories: [
+                "طراحی معماری (فاز ۱ و ۲)",
+                "مدل‌سازی سه‌بعدی و رندرینگ",
+                "رسیدگی به صورت‌وضعیت و تعدیل",
+                "محاسبات تاخیرات و بخشنامه ۵۰۹۰",
+                "تنظیم قراردادها و امور پیمان",
+                "ثبت اسناد حسابداری و مالی",
+                "کنترل پروژه، زمان‌بندی WBS و گزارش‌دهی"
+            ],
+            employees: [
+                { id: "emp_1", name: "فاطمه صالحی", deptId: "dept_arch", role: "کارشناس ارشد معماری", targetHours: 176, username: "salehi", password: "1234", active: true, canAccessPC: false },
+                { id: "emp_2", name: "نفیسه سلوک", deptId: "dept_arch", role: "کارشناس طراحی و معماری (فاز ۱ و ۲)", targetHours: 176, username: "solouk", password: "1234", active: true, canAccessPC: false },
+                { id: "emp_3", name: "علیرضا نجاری", deptId: "dept_contract", role: "کارشناس ارشد امور پیمان و رسیدگی", targetHours: 176, username: "najari", password: "1234", active: true, canAccessPC: true },
+                { id: "emp_4", name: "مهدیار مخلص‌پور", deptId: "dept_contract", role: "کارشناس متره، برآورد و صورت‌وضعیت", targetHours: 176, username: "mokhlespour", password: "1234", active: true, canAccessPC: false },
+                { id: "emp_5", name: "سعید منتظری", deptId: "dept_fin", role: "کارشناس ارشد مالی و حسابداری", targetHours: 176, username: "montazeri", password: "1234", active: true, canAccessPC: false },
+                { id: "emp_6", name: "کاوه راد", deptId: "dept_pc", role: "کارشناس ارشد کنترل پروژه", targetHours: 176, username: "rad", password: "1234", active: true, canAccessPC: true }
+            ],
+            worklogs: [
+                { id: "log_101", empId: "emp_1", projectCode: "PP-101", category: "طراحی معماری (فاز ۱ و ۲)", date: "18 / 07 / 1405", hours: 6.5, desc: "تکمیل پلان‌های اجرایی طبقات و دیتیل‌های معماری" },
+                { id: "log_102", empId: "emp_1", projectCode: "PP-101", category:
